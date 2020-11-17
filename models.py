@@ -1,6 +1,5 @@
 from app import *
 
-#Creating model table for our CRUD database
 class User(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(100), nullable=False)
@@ -40,10 +39,6 @@ class BookStatus(db.Model):
 
 class BookEntry(db.Model):
     """docstring for BookEntry"""
-    # id = db.Column(db.Integer, primary_key = True)
-    __tablename__ = 'book_entry'
-    __searchable__ = ['name', 'author','publisher']
-
     book_code = db.Column(db.Integer, db.Sequence('seq_reg_id', start=1000, increment=1), primary_key = True)
     name = db.Column(db.String(100), nullable=False)
     author = db.Column(db.String(100), nullable=False)
@@ -58,4 +53,3 @@ class BookEntry(db.Model):
     donated_by = db.Column(db.String(100), nullable=True)
 
 
-flask_whooshalchemy.whoosh_index(app, BookEntry)

@@ -38,6 +38,7 @@
 					<div class="form-group">
 						<label for="category">Category</label>
 						<select name="category" id="category" required>
+							<option value="">Select Category</option>
 							{% for each in data.category_list %}
 								<option value="{{each.id}}">{{each.name}}</option>
 							{% endfor %}
@@ -46,6 +47,7 @@
 					<div class="form-group">
 						<label for="book_shelf_number">Book Shelf Number</label>
 						<select name="book_shelf_number" id="book_shelf_number" required>
+							<option value="">Select Shelf Number</option>
 							{% for each in data.shelf_list %}
 								<option value="{{each.id}}">{{each.name}}</option>
 							{% endfor %}

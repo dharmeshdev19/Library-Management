@@ -3,19 +3,10 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask.ext.session import Session
 from flask_bootstrap import Bootstrap
-import yaml
 from flask_datepicker import datepicker
-import datetime
-# from utils import *
+import yaml
+from utils import *
 from form import *
-import flask_whooshalchemy
-import flask.ext.whooshalchemy
-
-from flask import Blueprint
-# from flask_paginate import Pagination, get_page_parameter
-from flask_paginate import Pagination, get_page_args
-from sqlalchemy import or_, and_, select
-
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -30,8 +21,6 @@ mysql_db_name = db.get('mysql_db_name', None)
 port = db.get('port', None)
 app.config['SQLALCHEMY_DATABASE_URI'] = database+'://'+mysql_user+':'+mysql_password+'@'+mysql_host+':'+port+'/'+mysql_db_name
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# app.config['WHOOSH_BASE'] = 'whoosh'
-app.config['WHOOSH_BASE'] = 'path/to/whoosh/base'
 
 db = SQLAlchemy(app)
 from models import *
@@ -103,16 +92,13 @@ def book_entry():
                 context['book_data'] = book_entry
                 return render_template("book_entry_detail.html", data=context)
             else:
-                flash("missing required fields", 'danger')
+                flash_errors(form)
                 return render_template("book_entry.html", data=context)
         else:
             return render_template("book_entry.html", data=context)
     else:
         flash('you need to login!', 'danger')
         return redirect(url_for('login'))
-
-def get_users(book_entry_obj, offset=0, per_page=2):
-    return book_entry_obj[offset: offset + per_page]
 
 @app.route('/search/', methods=['GET', 'POST'])
 def search():
@@ -126,37 +112,10 @@ def search():
         search = data.get('search', None)
         category = data.get('category', None)
         book_status = data.get('book_status', None)
-        issued_date = data.get('issued_date', None)
-        return_date = data.get('return_date', None)
         if search:
-            print(search)
             page = 1
             session['data'] = data
-            try:
-                book_entry_obj = BookEntry.query.filter(BookEntry.book_code==int(search))
-            except:
-                book_entry_obj = BookEntry.query.filter(or_(
-                    BookEntry.book_code.contains(search),
-                    BookEntry.name.contains(search),
-                    BookEntry.author.contains(search),
-                    BookEntry.publisher.contains(search)
-                ))
-            # if category:
-            #     for each in book_entry_obj.all():
-            #         if each.category != int(category):
-            #             print(book_entry_obj.all())
-            #             book_entry_obj.all().remove(each)
-            #             print(book_entry_obj.all())
-
-            # if book_status == '2':
-            #     issued_date , return_date
-            #     for each in book_entry_obj.all():
-            #         if each.book_status != int(book_status):
-            #             book_entry_obj.all().remove(each)
-            # elif book_status:
-            #     for each in book_entry_obj.all():
-            #         if each.book_status != int(book_status):
-            #             book_entry_obj.all().remove(each)
+            book_entry_obj = filter_data(BookEntry, search, category, book_status)
             context['book_entry_obj'] = book_entry_obj.paginate(page, 10, False)
     page = request.args.get('page')
     data = session.get('data')
@@ -164,28 +123,7 @@ def search():
         search = session.get('data').get('search')
         category = session.get('data').get('category')
         book_status = session.get('data').get('book_status')
-        try:
-            book_entry_obj = BookEntry.query.filter(BookEntry.book_code==int(search))
-        except:
-            book_entry_obj = BookEntry.query.filter(or_(
-                BookEntry.name.contains(search),
-                BookEntry.author.contains(search),
-                BookEntry.publisher.contains(search)
-            ))
-        # if category:
-        #     for each in book_entry_obj_list:
-        #         if each.category != int(category):
-        #             book_entry_obj_list.remove(each)
-
-        # if book_status == '2':
-        #     issued_date , return_date
-        #     for each in book_entry_obj_list:
-        #         if each.book_status != int(book_status):
-        #             book_entry_obj_list.remove(each)
-        # elif book_status:
-        #     for each in book_entry_obj_list:
-        #         if each.book_status != int(book_status):
-        #             book_entry_obj.remove(each)
+        book_entry_obj = filter_data(search, category, book_status)
         context['book_entry_obj'] = book_entry_obj.paginate(int(page), 10, False)
     return render_template("search.html", data=context)
 

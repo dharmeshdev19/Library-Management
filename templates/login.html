@@ -1,0 +1,29 @@
+{% extends 'bootstrap/base.html' %}
+
+{% block content %}
+	{% with messages = get_flashed_messages(with_categories=true) %}
+	  	{% if messages %}
+		    <ul class=flashes>
+			    {% for category, message in messages %}
+			    	<li class="alert alert={{ category }}">{{ message }}</li>
+			    {% endfor %}
+		    </ul>
+	  	{% endif %}
+	{% endwith %}
+	<div class="container">
+		<h2>Login</h2>
+		<form method="POST" action="/login/">
+			<div class="form-group">
+				<label for="username">Username</label><br>
+				<input type="text" class="form-control" name="username" required><br>
+			</div>
+			<div class="form-group">
+				<label for="password">Password</label><br>
+				<input type="password" class="form-control" name="password" required><br>
+			</div>
+			<button type="submit" class="btn btn-primary">Login</button>
+			<br><br>
+		</form>
+		<!-- <a href="/signup/"><button class="btn btn-primary">Sign Up</button></a><br><br> -->
+	</div>
+{% endblock content %}

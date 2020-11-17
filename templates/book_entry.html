@@ -1,0 +1,67 @@
+{% extends 'bootstrap/base.html' %}
+{% block scripts %}
+	{{ super() }}
+	{{ datepicker.loader() }} {# to load jQuery-ui #}
+	{{ datepicker.picker(id=".dp") }}
+{% endblock %}
+{% block content %}
+	{% with messages = get_flashed_messages(with_categories=true) %}
+	  	{% if messages %}
+		    <ul class=flashes>
+			    {% for category, message in messages %}
+			    	<li class="alert alert={{ category }}">{{ message }}</li>
+			    {% endfor %}
+		    </ul>
+	  	{% endif %}
+	{% endwith %}
+	<div class="container">
+		<div id="enter_new_book" class="row justify-content-center">
+			<div class="form-group col-md-4 col-md-offset-5 align-center ">
+				<h3>ENTER NEW BOOK</h3>
+				<form method="POST" action="/book_entry/">
+					<div class="form-group">
+						<label for="name">Name</label>
+						<input id="name" type="text" class="form-control" name="name" required>
+					</div>
+					<div class="form-group">
+						<label for="author">Author</label>
+						<input id="author" type="text" class="form-control" name="author" required>
+					</div>
+					<div class="form-group">
+						<label for="publisher">Publisher</label>
+						<input id="publisher" type="text" class="form-control" name="publisher" required>
+					</div>
+					<div class="form-group">
+						<label for="price">Price</label>
+						<input type="number" placeholder="0.00" required name="price" min="0" step="0.01" title="Currency" pattern="^\d+(?:\.\d{1,2})?$" onblur="this.parentNode.parentNode.style.backgroundColor=/^\d+(?:\.\d{1,2})?$/.test(this.value)?'inherit':'red'">
+					</div>
+					<div class="form-group">
+						<label for="category">Category</label>
+						<select name="category" id="category" required>
+							{% for each in data.category_list %}
+								<option value="{{each.id}}">{{each.name}}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="book_shelf_number">Book Shelf Number</label>
+						<select name="book_shelf_number" id="book_shelf_number" required>
+							{% for each in data.shelf_list %}
+								<option value="{{each.id}}">{{each.name}}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="donated_by">Donated by</label>
+						<input id="donated_by" type="text" class="form-control" name="donated_by">
+					</div>
+					<button onclick="window.location.href='/'">BACK</button>
+					<button id="enter_book" class="btn btn-primary">SUBMIT</button>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	{% block script %}
+	{% endblock script %}
+{% endblock content %}

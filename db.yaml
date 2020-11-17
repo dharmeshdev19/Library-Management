@@ -1,0 +1,6 @@
+database: 'postgresql'
+mysql_host: 'localhost'
+port: '5432'
+mysql_user: 'postgres'
+mysql_password: 'root'
+mysql_db_name: 'library_management'

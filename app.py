@@ -4,29 +4,19 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask.ext.session import Session
 from flask_bootstrap import Bootstrap
 from flask_datepicker import datepicker
-import yaml
 from utils import *
 from form import *
+import db_config
+from models import *
 
 app = Flask(__name__)
 app.config.from_object(__name__)
 sess = Session(app)
 
-# !! write database connection code in seperate file / function.
-db = yaml.load(open('db.yaml'))
-database = db.get('database', None)
-mysql_host = db.get('mysql_host', None)
-mysql_user = db.get('mysql_user', None)
-mysql_password = db.get('mysql_password', None)
-mysql_db_name = db.get('mysql_db_name', None)
-port = db.get('port', None)
-app.config['SQLALCHEMY_DATABASE_URI'] = database+'://'+mysql_user+':'+mysql_password+'@'+mysql_host+':'+port+'/'+mysql_db_name
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+db = db_config.database_config(app)
 db = SQLAlchemy(app)
-from models import *
 
-app = Flask(__name__)
+# app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def homepage():
@@ -52,7 +42,7 @@ def login():
                     return render_template("login.html")
                 else:
                     session['id'] = user.id
-                return redirect('http://127.0.0.1:5000/') # !! not proper redirection coding, please correct it as per standards
+                return redirect('/') # !! not proper redirection coding, please correct it as per standards
             except:
                 flash('User not found!', 'danger')
                 return render_template("login.html")
@@ -60,7 +50,7 @@ def login():
             return render_template("login.html")
     else:
         flash('you already login', 'danger')
-        return redirect('http://127.0.0.1:5000/') # !! not proper redirection coding, please correct it as per standards
+        return redirect('/') # !! not proper redirection coding, please correct it as per standards
             
 @app.route('/logout/', methods=['GET'])
 def logout():

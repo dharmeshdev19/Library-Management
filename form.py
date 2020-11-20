@@ -1,5 +1,5 @@
 from wtforms import Form, BooleanField, StringField, PasswordField, validators, FloatField, SelectField, FormField
-from models import *
+# from models import *
 
 class CategoryForm(Form):
 	name = StringField('Name', [validators.Length(min=1, max=25)])

@@ -12,6 +12,7 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 sess = Session(app)
 
+# !! write database connection code in seperate file / function.
 db = yaml.load(open('db.yaml'))
 database = db.get('database', None)
 mysql_host = db.get('mysql_host', None)
@@ -41,16 +42,17 @@ def login():
     if not session.get('id'):
         if request.method == 'POST':
             data = request.form
+            # !! very poor validation code, please add proper standard way of validating post data.
             username = data.get('username', None)
             password = data.get('password', None)
-            user = User.query.filter_by(username=username).first()
+            user = User.query.filter_by(username=username).first() # !! never perform query on direct data from user.
             try:
                 if not user or not check_password_hash(user.password, password):
                     flash('Invalid username and password!')
                     return render_template("login.html")
                 else:
                     session['id'] = user.id
-                return redirect('http://127.0.0.1:5000/')
+                return redirect('http://127.0.0.1:5000/') # !! not proper redirection coding, please correct it as per standards
             except:
                 flash('User not found!', 'danger')
                 return render_template("login.html")
@@ -58,7 +60,7 @@ def login():
             return render_template("login.html")
     else:
         flash('you already login', 'danger')
-        return redirect('http://127.0.0.1:5000/')
+        return redirect('http://127.0.0.1:5000/') # !! not proper redirection coding, please correct it as per standards
             
 @app.route('/logout/', methods=['GET'])
 def logout():
@@ -157,7 +159,7 @@ def donation_list():
 
 if __name__ == "__main__":
     app.secret_key = 'super secret key'
-    app.config['SESSION_TYPE'] = 'filesystem'
+    app.config['SESSION_TYPE'] = 'filesystem' # !! save session in database instead of filesystem
     sess.init_app(app)
     bootstrap = Bootstrap(app)
     datepicker = datepicker(app)

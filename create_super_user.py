@@ -13,10 +13,12 @@ def register(username, password):
 		print("something wrong, please contact admin!")
 
 
-username = input("Enter username")
-password = input("Enter password")
+username = input("Enter username") # the input is asked on same line, make sure it ask input data on next line
+password = input("Enter password") # the input is asked on same line, make sure it ask input data on next line
 
 if username and password:
 	register(username, password)
 else:
 	print("Enter username and password!")
+
+# !! write the function in recursive manner, make sure you add proper validation when taking input from user, if the user does not provide any input data, you should prompt it to ask again from input data.

@@ -20,12 +20,8 @@
 				<h3>ENTER NEW BOOK</h3>
 				<form method="POST" action="/book_entry/">
 					<div class="form-group">
-						<label for="name">Name</label>
+						<label for="name">Name*</label>
 						<input id="name" type="text" class="form-control" name="name" required>
-					</div>
-					<div class="form-group">
-						<label for="book_language">Book Language</label>
-						<input id="book_language" type="text" class="form-control" name="book_language" required>
 					</div>
 					<div class="form-group">
 						<label for="author">Author</label>
@@ -36,11 +32,15 @@
 						<input id="publisher" type="text" class="form-control" name="publisher">
 					</div>
 					<div class="form-group">
+						<label for="book_language">Book Language*</label>
+						<input id="book_language" type="text" class="form-control" name="book_language" required>
+					</div>
+					<div class="form-group">
 						<label for="price">Price</label><br>
 						<input type="number" placeholder="0.00" name="price" min="0" step="0.01" title="Currency" pattern="^\d+(?:\.\d{1,2})?$" onblur="this.parentNode.parentNode.style.backgroundColor=/^\d+(?:\.\d{1,2})?$/.test(this.value)">
 					</div>
 					<div class="form-group">
-						<label for="category">Category</label><br>
+						<label for="category">Category*</label><br>
 						<select name="category" id="category" required>
 							<option value="">Select Category</option>
 							{% for each in data.category_list %}
@@ -49,7 +49,7 @@
 						</select>
 					</div>
 					<div class="form-group">
-						<label for="book_shelf_number">Book Shelf Number</label><br>
+						<label for="book_shelf_number">Book Shelf Number*</label><br>
 						<select name="book_shelf_number" id="book_shelf_number" required>
 							<option value="">Select Shelf Number</option>
 							{% for each in data.shelf_list %}

@@ -1,0 +1,66 @@
+{% extends 'bootstrap/base.html' %}
+{% block scripts %}
+	{{ super() }}
+	{{ datepicker.loader() }} {# to load jQuery-ui #}
+	{{ datepicker.picker(id=".dp") }}
+{% endblock %}
+{% block content %}
+	{% with messages = get_flashed_messages(with_categories=true) %}
+	  	{% if messages %}
+		    <ul class=flashes>
+			    {% for category, message in messages %}
+			    	<li class="alert alert={{ category }}">{{ message }}</li>
+			    {% endfor %}
+		    </ul>
+	  	{% endif %}
+	{% endwith %}
+	<div class="container">
+		<div id="added_book" class="row justify-content-center">
+			<div class="form-group col-md-4 col-md-offset-5 align-center ">
+				<h3>Book update successfully!</h3>
+				{% if data.book_data %}
+					<div class="form-group">
+						<label for="name">Book Code</label>
+						<h5 id="book_name">{{data.book_data.book_code}}</h5>
+					</div>
+					<div class="form-group">
+						<label for="name">Name</label>
+						<h5 id="book_name">{{data.book_data.name}}</h5>
+					</div>
+					<div class="form-group">
+						<label for="book_language">Book Language</label>
+						<h5 id="book_language">{{data.book_data.book_language}}</h5>
+					</div>
+					<div class="form-group">
+						<label for="author">Author</label>
+						<h5 id="book_author">{{data.book_data.author}}</h5>
+					</div>
+					<div class="form-group">
+						<label for="publisher">Publisher</label>
+						<h5 id="book_publisher">{{data.book_data.publisher}}</h5>
+					</div>
+					<div class="form-group">
+						<label for="price">Price</label>
+						<h5 id="book_price">{{data.book_data.price}}</h5>
+					</div>
+					<div class="form-group">
+						<label for="category">Category</label>
+						<h5 id="book_category">{{data.book_data.category_name.name}}</h5>
+					</div>
+					<div class="form-group">
+						<label for="book_shelf_number">Book Shelf Number</label>
+						<h5 id="book_shelf_number2">{{data.book_data.shelf_name.name}}</h5>
+					</div>
+					<div class="form-group">
+						<label for="donated_by">Donated by</label>
+						<h5 id="book_donated_by">{{data.book_data.donated_by}}</h5>
+					</div>
+				{% else %}
+					<h2> Book data not available</h2>
+				{% endif %}
+				<a href="/"><button>BACK</button></a>
+				<a href="/book_entry/"><button class="btn btn-primary">ADD ANOTHER BOOK</button></a>				
+			</div>
+		</div> 
+	</div>
+{% endblock content %}

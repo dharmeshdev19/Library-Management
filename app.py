@@ -8,6 +8,10 @@ from utils import *
 from form import *
 import db_config
 import datetime
+from flask import Flask, make_response, send_from_directory, send_file, Response
+from openpyxl import load_workbook
+import io
+import xlwt
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -130,9 +134,39 @@ def search():
         search = session.get('data').get('search')
         category = session.get('data').get('category')
         book_status = session.get('data').get('book_status')
-        book_entry_obj = filter_data(search, category, book_status)
+        book_entry_obj = filter_data(BookEntry, search, category, book_status)
         context['book_entry_obj'] = book_entry_obj.paginate(int(page), 10, False)
     return render_template("search.html", data=context)
+
+@app.route('/book_edit/', methods=['GET', 'POST'])
+def book_edit():
+    if session.get('id'):
+        context = {}
+        category_list = Category.query.all()
+        shelf_list = BookShelf.query.all()
+        context['shelf_list'] = shelf_list
+        context['category_list'] = category_list
+        book_code = request.args.get('book_code')
+        if request.method == 'POST':
+            data = request.form
+            json_data = dict(data)
+            book_code = json_data.pop('book_code')
+            book_entry = BookEntry.query.filter_by(book_code=book_code).update(json_data)
+            db.session.commit()
+            book_entry = BookEntry.query.filter_by(book_code=book_code).first()
+            context['book_data'] = book_entry
+            return render_template("book_update.html", data=context)
+        else:
+            book_entry_obj = BookEntry.query.filter_by(book_code=book_code).first()
+            shelf_name = BookShelf.query.filter_by(id=book_entry_obj.book_shelf).first().name
+            category_name = Category.query.filter_by(id=book_entry_obj.category).first().name
+            context['category_name'] = category_name
+            context['shelf_name'] = shelf_name
+            context['book_data'] = book_entry_obj
+            return render_template("book_edit.html", data=context)
+    else:
+        flash('you need to login!', 'danger')
+        return redirect(url_for('login'))
 
 # @app.route('/book_entry_detail/', methods=['GET', 'POST'])
 # def book_entry_detail():
@@ -192,6 +226,61 @@ def book_issue():
     context['return_date'] = return_date
     context['book_entry_obj'] = book_entry_obj
     return render_template("book_issue.html", data=context)
+
+@app.route('/download_book_list/', methods=['GET'])
+def download_book_list():
+    data = session.get('data')
+    if data:
+        search = session.get('data').get('search')
+        category = session.get('data').get('category')
+        book_status = session.get('data').get('book_status')
+        book_list = filter_data(BookEntry, search, category, book_status)
+        if book_list:
+            #output in bytes
+            output = io.BytesIO()
+            #create WorkBook object
+            workbook = xlwt.Workbook()
+
+                #add a sheet
+            sh = workbook.add_sheet('Book List')
+            #add headers
+            sh.write(0, 0, 'Book Code')
+            sh.write(0, 1, 'Name')
+            sh.write(0, 2, 'Book Language')
+            sh.write(0, 3, 'Author')
+            sh.write(0, 4, 'Publisher')
+            sh.write(0, 5, 'Price')
+            sh.write(0, 6, 'Category')
+            sh.write(0, 7, 'Shelf')
+            sh.write(0, 8, 'Status')
+            sh.write(0, 9, 'Donated By')
+            sh.write(0, 10, 'Return Date')
+            sh.write(0, 11, 'Overdue')
+            
+            idx = 0
+            for book in book_list.all():
+                sh.write(idx+1, 0, str(book.book_code))
+                sh.write(idx+1, 1, book.name)
+                sh.write(idx+1, 2, book.book_language)
+                sh.write(idx+1, 3, book.author)
+                sh.write(idx+1, 4, book.publisher)
+                sh.write(idx+1, 5, str(book.price))
+                sh.write(idx+1, 6, str(book.category_name))
+                sh.write(idx+1, 7, str(book.shelf_name))
+                sh.write(idx+1, 8, str(book.book_status))
+                sh.write(idx+1, 9, book.donated_by)
+                sh.write(idx+1, 10, '')
+                sh.write(idx+1, 11, '')
+                idx += 1
+            workbook.save(output)
+            output.seek(0)
+            return Response(output, mimetype="application/ms-excel", headers={"Content-Disposition":"attachment;filename=book_list.xls"})
+        else:
+            flash('book not found!', 'danger')
+            return render_template("search.html")
+    else:
+        flash('book not found!', 'danger')
+        return render_template("search.html")
 
 @app.route('/book_return/', methods=['GET'])
 def book_return():

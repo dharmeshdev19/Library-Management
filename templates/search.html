@@ -56,40 +56,51 @@
 		
 	</form>
 	{% if data.book_entry_obj %}
-		<table>
-			<tr>
-				<th>Book Code</th>
-				<th>Name</th>
-				<th>Author</th>
-				<th>Publisher</th>
-				<th>Price</th>
-				<th>Category</th>
-				<th>Book Shelf</th>
-				<th>Book Status</th>
-				<th>Edit</th>
-				<th>Action</th>
-			</tr>
-			{% for book in data.book_entry_obj.items %}
+		{% if data.book_entry_obj.items %}
+			<a href="/download_book_list/"><button class="btn btn-success btn-lg float-right">Download in excle</button></a>
+			<table>
 				<tr>
-					<th>{{book.book_code}}</th>
-					<th>{{book.name}}</th>
-					<th>{{book.author}}</th>
-					<th>{{book.publisher}}</th>
-					<th>{{book.price}}</th>
-					<th>{{book.category_name.name}}</th>
-					<th>{{book.shelf_name.name}}</th>
-					<th>{{book.book_status_name.name}}</th>
-					<th><button type="submit" class="btn btn-primary">Edit</button></th>
-					<th>
-						{% if book.book_status == 1 %}
-							<a href="{{ url_for('book_issue',book_code=book.book_code)}}"><button class="btn btn-primary">Issue</button></a>
-						{% else %}
-							<button class="btn btn-primary">Issue</button>
-						{% endif %}
-					</th>
+					<th>Book Code</th>
+					<th>Name</th>
+					<th>Author</th>
+					<th>Publisher</th>
+					<th>Price</th>
+					<th>Category</th>
+					<th>Book Shelf</th>
+					<th>Book Status</th>
+					<th>Edit</th>
+					<th>Action</th>
 				</tr>
-			{% endfor %}
-		</table>
+				{% for book in data.book_entry_obj.items %}
+					<tr>
+						<th>{{book.book_code}}</th>
+						<th>{{book.name}}</th>
+						<th>{{book.author}}</th>
+						<th>{{book.publisher}}</th>
+						<th>{{book.price}}</th>
+						<th>{{book.category_name.name}}</th>
+						<th>{{book.shelf_name.name}}</th>
+						<th>{{book.book_status_name.name}}</th>
+						<th>
+							<a href="{{ url_for('book_edit',book_code=book.book_code)}}">
+								<button type="submit" class="btn btn-primary">
+								Edit</button>
+							</a>
+						</th>
+						<th>
+							{% if book.book_status == 1 %}
+								<a href="{{ url_for('book_issue',book_code=book.book_code)}}"><button class="btn btn-primary">Issue</button></a>
+							{% else %}
+								<button class="btn btn-primary">Issue</button>
+							{% endif %}
+						</th>
+					</tr>
+				{% endfor %}
+				
+			</table>
+		{% else %}
+			<H1>Books not found!</H1>
+		{% endif %}
 		{% for page_num in data.book_entry_obj.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
 			{% if page_num %}
 				{% if data.book_entry_obj.page == page_num %}

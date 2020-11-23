@@ -66,6 +66,8 @@
 				<th>Category</th>
 				<th>Book Shelf</th>
 				<th>Book Status</th>
+				<th>Edit</th>
+				<th>Action</th>
 			</tr>
 			{% for book in data.book_entry_obj.items %}
 				<tr>
@@ -74,9 +76,17 @@
 					<th>{{book.author}}</th>
 					<th>{{book.publisher}}</th>
 					<th>{{book.price}}</th>
-					<th>{{book.category}}</th>
-					<th>{{book.book_shelf}}</th>
-					<th>{{book.book_status}}</th>
+					<th>{{book.category_name.name}}</th>
+					<th>{{book.shelf_name.name}}</th>
+					<th>{{book.book_status_name.name}}</th>
+					<th><button type="submit" class="btn btn-primary">Edit</button></th>
+					<th>
+						{% if book.book_status == 1 %}
+							<a href="{{ url_for('book_issue',book_code=book.book_code)}}"><button class="btn btn-primary">Issue</button></a>
+						{% else %}
+							<button class="btn btn-primary">Issue</button>
+						{% endif %}
+					</th>
 				</tr>
 			{% endfor %}
 		</table>

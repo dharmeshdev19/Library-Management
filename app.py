@@ -7,14 +7,16 @@ from flask_datepicker import datepicker
 from utils import *
 from form import *
 import db_config
-from models import *
+import datetime
 
 app = Flask(__name__)
 app.config.from_object(__name__)
 sess = Session(app)
 
-db = db_config.database_config(app)
+db = db_config.database_config(app)[0]
+app = db_config.database_config(app)[1]
 db = SQLAlchemy(app)
+from models import *
 
 # app = Flask(__name__)
 
@@ -35,23 +37,29 @@ def login():
             # !! very poor validation code, please add proper standard way of validating post data.
             username = data.get('username', None)
             password = data.get('password', None)
-            user = User.query.filter_by(username=username).first() # !! never perform query on direct data from user.
-            try:
-                if not user or not check_password_hash(user.password, password):
-                    flash('Invalid username and password!')
+            
+            form = UserForm(data)
+            if form.validate():
+                user = User.query.filter_by(username=username).first() # !! never perform query on direct data from user.
+                try:
+                    if not user or not check_password_hash(user.password, password):
+                        flash('Invalid username and password!')
+                        return render_template("login.html")
+                    else:
+                        session['id'] = user.id
+                    return redirect('/') 
+                except:
+                    flash('User not found!', 'danger')
                     return render_template("login.html")
-                else:
-                    session['id'] = user.id
-                return redirect('/') # !! not proper redirection coding, please correct it as per standards
-            except:
-                flash('User not found!', 'danger')
+            else:
+                flash_errors(form)
                 return render_template("login.html")
         else:
             return render_template("login.html")
     else:
         flash('you already login', 'danger')
-        return redirect('/') # !! not proper redirection coding, please correct it as per standards
-            
+        return redirect('/') 
+
 @app.route('/logout/', methods=['GET'])
 def logout():
     session.clear()
@@ -69,15 +77,22 @@ def book_entry():
         if request.method == 'POST':
             data = request.form
             name = data.get('name', None)
+            book_language = data.get('book_language', None)
             author = data.get('author', None)
             publisher = data.get('publisher', None)
             price = data.get('price', None)
+            if not price:
+                price = 0
             category = data.get('category', None)
+            if not category:
+                flash('category required field!', 'danger')
             book_shelf_number = data.get('book_shelf_number', None)
+            if not book_shelf_number:
+                flash('book shelf required field!', 'danger')
             donated_by = data.get('donated_by', None)
             form = BookEntryForm(data)
             if form.validate():
-                book_entry = BookEntry(name=name, author=author, publisher=publisher, price=price,
+                book_entry = BookEntry(name=name, book_language=book_language, author=author, publisher=publisher, price=price,
                     category=int(category), book_shelf=int(book_shelf_number), book_status=1, donated_by=donated_by)
                 db.session.add(book_entry)
                 db.session.commit()
@@ -131,9 +146,52 @@ def search():
 #         flash('you need to login!', 'danger')
 #         return redirect(url_for('login'))
 
-@app.route('/book_issue/', methods=['GET'])
+@app.route('/book_search/', methods=['GET', 'POST'])
+def book_search():
+    context = {}
+    if request.method == 'POST':
+        data = request.form
+        search = data.get('search', None)
+        if search:
+            book_entry_list = book_search(BookEntry, search)
+            context['book_entry_list'] = book_entry_list
+    return render_template("book_issue.html", data=context)
+
+@app.route('/book_issue/', methods=['GET', 'POST'])
 def book_issue():
-    return render_template("book_issue.html")
+    context = {}
+    if request.method == 'POST':
+        data = request.form
+        search = data.get('search', None)
+        if search:
+            book_entry_list = book_search(BookEntry, search)
+            context['book_entry_list'] = book_entry_list
+        else:
+            form = BorrowerDetailForm(data)
+            if form.validate():
+                name = data.get('name', None)
+                address = data.get('address', None)
+                cell_no = data.get('cell_no', None)
+                email = data.get('email', None)
+                issue_date = data.get('issue_date', None)
+                return_date = data.get('return_date', None)
+                book_entry = data.get('book_code')
+                borrow_obj = BorrowerDetail(name=name, address=address, cell_no=int(cell_no), email=email,
+                    issue_date=issue_date, return_date=return_date, return_status=False, book_entry=int(book_entry))
+                db.session.add(borrow_obj)
+                db.session.commit()
+                return redirect('/')
+            else:
+                flash_errors(form)
+        return render_template("book_issue.html", data=context)
+    book_code = request.args.get('book_code')
+    book_entry_obj = BookEntry.query.filter_by(book_code=book_code).first()
+    issue_date = datetime.date.today()
+    return_date = datetime.date.today() + datetime.timedelta(days=10)
+    context['issue_date'] = issue_date
+    context['return_date'] = return_date
+    context['book_entry_obj'] = book_entry_obj
+    return render_template("book_issue.html", data=context)
 
 @app.route('/book_return/', methods=['GET'])
 def book_return():

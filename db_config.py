@@ -10,4 +10,4 @@ def database_config(app):
 	port = db.get('port', None)
 	app.config['SQLALCHEMY_DATABASE_URI'] = database+'://'+mysql_user+':'+mysql_password+'@'+mysql_host+':'+port+'/'+mysql_db_name
 	app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-	return app
+	return (db, app)

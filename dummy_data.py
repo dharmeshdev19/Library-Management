@@ -2,7 +2,11 @@ from models import Category, BookShelf, BookStatus
 from app import *
 
 #Create category
-names = ["Arts & Music","Autobiography","Biography","Business","Children's","Classic","Comics","Computers & Tech","Cooking","Crime","Crafts","Dictionary","Drama","Edu & Reference","Encyclopedia","Entertainment","Health","History","Hobbies","Horror","Humor","Journal","Kids","Literature & Fiction","Medical","Motivational","Mysteries","Philosophy","Picture book","Poetry","Religion","Romance","Science","Sci-Fiction & Fantasy","Science & Math","Self-Help","Social Sciences","Sports","Thriller","Travel"]
+names = ["Arts & Music","Autobiography / Biography","Business","Children's & Kids","Classic","Comics","Computers & Tech","Competitive",
+"Cooking","Hobbies & Crafts","Dictionary","Edu & Reference","Encyclopedia","Entertainment","Health","History","Journal","Language","Literature","Math","Magazine",
+"Medical","Motivational","Mythology","Novels","Others","Periodicals","Philosophy","Photography",
+"Poetry","Religious","Science","Sci-Fiction & Fantasy","Self-Help","Social Sciences","Sports","Travel"]
+
 for name in names:
 	category = Category(name=name,)
 	db.session.add(category)

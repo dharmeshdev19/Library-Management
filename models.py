@@ -1,4 +1,4 @@
-from app import *
+from app import db
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key = True)
@@ -40,16 +40,31 @@ class BookStatus(db.Model):
 class BookEntry(db.Model):
     """docstring for BookEntry"""
     book_code = db.Column(db.Integer, db.Sequence('seq_reg_id', start=1000, increment=1), primary_key = True)
-    name = db.Column(db.String(100), nullable=False)
-    author = db.Column(db.String(100), nullable=False)
-    publisher = db.Column(db.String(100), nullable=False)
-    price = db.Column(db.Float, nullable=False)
+    name = db.Column(db.String(500), nullable=False)
+    book_language = db.Column(db.String(100), nullable=False)
+    author = db.Column(db.String(100), nullable=True)
+    publisher = db.Column(db.String(100), nullable=True)
+    price = db.Column(db.Float, nullable=True)
     category = db.Column(db.Integer, db.ForeignKey('category.id'),
         nullable=False)
+    category_name = db.relationship("Category", foreign_keys=category)
     book_shelf = db.Column(db.Integer, db.ForeignKey('book_shelf.id'),
         nullable=False)
+    shelf_name = db.relationship("BookShelf", foreign_keys=book_shelf)
     book_status = db.Column(db.Integer, db.ForeignKey('book_status.id'),
         nullable=False)
+    book_status_name = db.relationship("BookStatus", foreign_keys=book_status)
     donated_by = db.Column(db.String(100), nullable=True)
 
-
+class BorrowerDetail(db.Model):
+    """docstring for BookEntry"""
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String(100), nullable=False)
+    address = db.Column(db.String(100), nullable=False)
+    cell_no = db.Column(db.Integer, nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    issue_date = db.Column(db.Date, nullable=False)
+    return_date = db.Column(db.Date, nullable=False)
+    return_status = db.Column(db.Boolean, default=False, nullable=False)
+    book_entry = db.Column(db.Integer, db.ForeignKey('book_entry.book_code'),
+        nullable=False)

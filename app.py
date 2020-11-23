@@ -3,40 +3,22 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask.ext.session import Session
 from flask_bootstrap import Bootstrap
-import yaml
 from flask_datepicker import datepicker
-import datetime
-# from utils import *
+from utils import *
 from form import *
-import flask_whooshalchemy
-import flask.ext.whooshalchemy
-
-from flask import Blueprint
-# from flask_paginate import Pagination, get_page_parameter
-from flask_paginate import Pagination, get_page_args
-from sqlalchemy import or_, and_, select
-
+import db_config
+import datetime
 
 app = Flask(__name__)
 app.config.from_object(__name__)
 sess = Session(app)
 
-db = yaml.load(open('db.yaml'))
-database = db.get('database', None)
-mysql_host = db.get('mysql_host', None)
-mysql_user = db.get('mysql_user', None)
-mysql_password = db.get('mysql_password', None)
-mysql_db_name = db.get('mysql_db_name', None)
-port = db.get('port', None)
-app.config['SQLALCHEMY_DATABASE_URI'] = database+'://'+mysql_user+':'+mysql_password+'@'+mysql_host+':'+port+'/'+mysql_db_name
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# app.config['WHOOSH_BASE'] = 'whoosh'
-app.config['WHOOSH_BASE'] = 'path/to/whoosh/base'
-
+db = db_config.database_config(app)[0]
+app = db_config.database_config(app)[1]
 db = SQLAlchemy(app)
 from models import *
 
-app = Flask(__name__)
+# app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def homepage():
@@ -52,25 +34,32 @@ def login():
     if not session.get('id'):
         if request.method == 'POST':
             data = request.form
+            # !! very poor validation code, please add proper standard way of validating post data.
             username = data.get('username', None)
             password = data.get('password', None)
-            user = User.query.filter_by(username=username).first()
-            try:
-                if not user or not check_password_hash(user.password, password):
-                    flash('Invalid username and password!')
+            
+            form = UserForm(data)
+            if form.validate():
+                user = User.query.filter_by(username=username).first() # !! never perform query on direct data from user.
+                try:
+                    if not user or not check_password_hash(user.password, password):
+                        flash('Invalid username and password!')
+                        return render_template("login.html")
+                    else:
+                        session['id'] = user.id
+                    return redirect('/') 
+                except:
+                    flash('User not found!', 'danger')
                     return render_template("login.html")
-                else:
-                    session['id'] = user.id
-                return redirect('http://127.0.0.1:5000/')
-            except:
-                flash('User not found!', 'danger')
+            else:
+                flash_errors(form)
                 return render_template("login.html")
         else:
             return render_template("login.html")
     else:
         flash('you already login', 'danger')
-        return redirect('http://127.0.0.1:5000/')
-            
+        return redirect('/') 
+
 @app.route('/logout/', methods=['GET'])
 def logout():
     session.clear()
@@ -88,31 +77,35 @@ def book_entry():
         if request.method == 'POST':
             data = request.form
             name = data.get('name', None)
+            book_language = data.get('book_language', None)
             author = data.get('author', None)
             publisher = data.get('publisher', None)
             price = data.get('price', None)
+            if not price:
+                price = 0
             category = data.get('category', None)
+            if not category:
+                flash('category required field!', 'danger')
             book_shelf_number = data.get('book_shelf_number', None)
+            if not book_shelf_number:
+                flash('book shelf required field!', 'danger')
             donated_by = data.get('donated_by', None)
             form = BookEntryForm(data)
             if form.validate():
-                book_entry = BookEntry(name=name, author=author, publisher=publisher, price=price,
+                book_entry = BookEntry(name=name, book_language=book_language, author=author, publisher=publisher, price=price,
                     category=int(category), book_shelf=int(book_shelf_number), book_status=1, donated_by=donated_by)
                 db.session.add(book_entry)
                 db.session.commit()
                 context['book_data'] = book_entry
                 return render_template("book_entry_detail.html", data=context)
             else:
-                flash("missing required fields", 'danger')
+                flash_errors(form)
                 return render_template("book_entry.html", data=context)
         else:
             return render_template("book_entry.html", data=context)
     else:
         flash('you need to login!', 'danger')
         return redirect(url_for('login'))
-
-def get_users(book_entry_obj, offset=0, per_page=2):
-    return book_entry_obj[offset: offset + per_page]
 
 @app.route('/search/', methods=['GET', 'POST'])
 def search():
@@ -126,37 +119,10 @@ def search():
         search = data.get('search', None)
         category = data.get('category', None)
         book_status = data.get('book_status', None)
-        issued_date = data.get('issued_date', None)
-        return_date = data.get('return_date', None)
         if search:
-            print(search)
             page = 1
             session['data'] = data
-            try:
-                book_entry_obj = BookEntry.query.filter(BookEntry.book_code==int(search))
-            except:
-                book_entry_obj = BookEntry.query.filter(or_(
-                    BookEntry.book_code.contains(search),
-                    BookEntry.name.contains(search),
-                    BookEntry.author.contains(search),
-                    BookEntry.publisher.contains(search)
-                ))
-            # if category:
-            #     for each in book_entry_obj.all():
-            #         if each.category != int(category):
-            #             print(book_entry_obj.all())
-            #             book_entry_obj.all().remove(each)
-            #             print(book_entry_obj.all())
-
-            # if book_status == '2':
-            #     issued_date , return_date
-            #     for each in book_entry_obj.all():
-            #         if each.book_status != int(book_status):
-            #             book_entry_obj.all().remove(each)
-            # elif book_status:
-            #     for each in book_entry_obj.all():
-            #         if each.book_status != int(book_status):
-            #             book_entry_obj.all().remove(each)
+            book_entry_obj = filter_data(BookEntry, search, category, book_status)
             context['book_entry_obj'] = book_entry_obj.paginate(page, 10, False)
     page = request.args.get('page')
     data = session.get('data')
@@ -164,28 +130,7 @@ def search():
         search = session.get('data').get('search')
         category = session.get('data').get('category')
         book_status = session.get('data').get('book_status')
-        try:
-            book_entry_obj = BookEntry.query.filter(BookEntry.book_code==int(search))
-        except:
-            book_entry_obj = BookEntry.query.filter(or_(
-                BookEntry.name.contains(search),
-                BookEntry.author.contains(search),
-                BookEntry.publisher.contains(search)
-            ))
-        # if category:
-        #     for each in book_entry_obj_list:
-        #         if each.category != int(category):
-        #             book_entry_obj_list.remove(each)
-
-        # if book_status == '2':
-        #     issued_date , return_date
-        #     for each in book_entry_obj_list:
-        #         if each.book_status != int(book_status):
-        #             book_entry_obj_list.remove(each)
-        # elif book_status:
-        #     for each in book_entry_obj_list:
-        #         if each.book_status != int(book_status):
-        #             book_entry_obj.remove(each)
+        book_entry_obj = filter_data(search, category, book_status)
         context['book_entry_obj'] = book_entry_obj.paginate(int(page), 10, False)
     return render_template("search.html", data=context)
 
@@ -201,9 +146,52 @@ def search():
 #         flash('you need to login!', 'danger')
 #         return redirect(url_for('login'))
 
-@app.route('/book_issue/', methods=['GET'])
+@app.route('/book_search/', methods=['GET', 'POST'])
+def book_search():
+    context = {}
+    if request.method == 'POST':
+        data = request.form
+        search = data.get('search', None)
+        if search:
+            book_entry_list = book_search(BookEntry, search)
+            context['book_entry_list'] = book_entry_list
+    return render_template("book_issue.html", data=context)
+
+@app.route('/book_issue/', methods=['GET', 'POST'])
 def book_issue():
-    return render_template("book_issue.html")
+    context = {}
+    if request.method == 'POST':
+        data = request.form
+        search = data.get('search', None)
+        if search:
+            book_entry_list = book_search(BookEntry, search)
+            context['book_entry_list'] = book_entry_list
+        else:
+            form = BorrowerDetailForm(data)
+            if form.validate():
+                name = data.get('name', None)
+                address = data.get('address', None)
+                cell_no = data.get('cell_no', None)
+                email = data.get('email', None)
+                issue_date = data.get('issue_date', None)
+                return_date = data.get('return_date', None)
+                book_entry = data.get('book_code')
+                borrow_obj = BorrowerDetail(name=name, address=address, cell_no=int(cell_no), email=email,
+                    issue_date=issue_date, return_date=return_date, return_status=False, book_entry=int(book_entry))
+                db.session.add(borrow_obj)
+                db.session.commit()
+                return redirect('/')
+            else:
+                flash_errors(form)
+        return render_template("book_issue.html", data=context)
+    book_code = request.args.get('book_code')
+    book_entry_obj = BookEntry.query.filter_by(book_code=book_code).first()
+    issue_date = datetime.date.today()
+    return_date = datetime.date.today() + datetime.timedelta(days=10)
+    context['issue_date'] = issue_date
+    context['return_date'] = return_date
+    context['book_entry_obj'] = book_entry_obj
+    return render_template("book_issue.html", data=context)
 
 @app.route('/book_return/', methods=['GET'])
 def book_return():
@@ -219,7 +207,7 @@ def donation_list():
 
 if __name__ == "__main__":
     app.secret_key = 'super secret key'
-    app.config['SESSION_TYPE'] = 'filesystem'
+    app.config['SESSION_TYPE'] = 'filesystem' # !! save session in database instead of filesystem
     sess.init_app(app)
     bootstrap = Bootstrap(app)
     datepicker = datepicker(app)

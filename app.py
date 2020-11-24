@@ -127,7 +127,7 @@ def search():
             page = 1
             session['data'] = data
             book_entry_obj = filter_data(BookEntry, search, category, book_status)
-            context['book_entry_obj'] = book_entry_obj.paginate(page, 10, False)
+            context['book_entry_obj'] = book_entry_obj.paginate(page, 5, False)
     page = request.args.get('page')
     data = session.get('data')
     if page and data:
@@ -135,7 +135,7 @@ def search():
         category = session.get('data').get('category')
         book_status = session.get('data').get('book_status')
         book_entry_obj = filter_data(BookEntry, search, category, book_status)
-        context['book_entry_obj'] = book_entry_obj.paginate(int(page), 10, False)
+        context['book_entry_obj'] = book_entry_obj.paginate(int(page), 5, False)
     return render_template("search.html", data=context)
 
 @app.route('/book_edit/', methods=['GET', 'POST'])
@@ -297,6 +297,7 @@ def donation_list():
 if __name__ == "__main__":
     app.secret_key = 'super secret key'
     app.config['SESSION_TYPE'] = 'filesystem' # !! save session in database instead of filesystem
+    app.config['TEMPLATES_AUTO_RELOAD'] = True # to auto-reload templates changes.
     sess.init_app(app)
     bootstrap = Bootstrap(app)
     datepicker = datepicker(app)

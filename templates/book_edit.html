@@ -46,28 +46,31 @@
 					<div class="form-group">
 						<label for="category">Category*</label><br>
 						<select name="category" id="category" required>
-							{% if data.book_data.category %}
-								<option id="cat1" value="{{data.book_data.category}}">{{data.category_name}}</option>
-							{% else %}
-								<option value="">Select Category</option>
-							{% endif %}
+							<option >Select Category</option>
 							{% for each in data.category_list %}
-								<option value="{{each.id}}">{{each.name}}</option>
+								{% if data.book_data.category and data.book_data.category == each.id %}
+									<option id="cat1" value="{{data.book_data.category}}" selected>{{data.category_name}}</option>
+								{% else %}
+									<option value="{{each.id}}">{{each.name}}</option>
+								{% endif %}
 							{% endfor %}
 						</select>
 					</div>
 					<div class="form-group">
 						<label for="book_shelf">Book Shelf Number*</label><br>
-						<select name="book_shelf" id="book_shelf" required>
-							{% if data.book_data.book_shelf %}
+						<select name="book_shelf" id="book_shelf" required>		{% for each in data.shelf_list %}
+								{% if data.book_data.book_shelf and data.book_data.book_shelf == each.id %}
+									<option id="cat1" value="{{data.book_data.book_shelf}}" selected>{{data.shelf_name}}</option>
+								{% else %}
+									<option value="{{each.id}}">{{each.name}}</option>
+								{% endif %}
+							{% endfor %}
+
+							<!-- {% if data.book_data.book_shelf %}
 								<option id="shelf1" value="{{data.book_data.book_shelf}}">{{data.shelf_name}}</option>
 							{% else %}
 								<option value="">Select Shelf Number</option>
-							{% endif %}
-
-							{% for each in data.shelf_list %}
-								<option value="{{each.id}}">{{each.name}}</option>
-							{% endfor %}
+							{% endif %} -->
 						</select>
 					</div>
 					<div class="form-group">
@@ -82,21 +85,5 @@
 	</div>
 
 	{% block script %}
-	    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-	    <script type="text/javascript">
-		    // $( document ).ready(function() {
-		    // 	$("#employee_detail").show();
-		    // 	$("#employee_detail_edit").hide();
-		    // });
-
-		 	$("#category").click(function(){
-		 		alert("Hello");
-		 		$("#cat1").hide();
-			});
-			$("#book_shelf").click(function(){
-		 		alert("Hello");
-		 		$("#shelf1").hide();
-			});
-	    </script>
 	{% endblock script %}
 {% endblock content %}

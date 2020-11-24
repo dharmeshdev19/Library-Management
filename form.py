@@ -40,7 +40,7 @@ class BorrowerDetailForm(Form):
 	name = StringField('Name', [validators.required(), validators.Length(min=1, max=25)])
 	address = StringField('Address', [validators.required(), validators.Length(min=3, max=25)])
 	cell_no = IntegerField('Cell No', [validators.required()])
-	email = StringField('Email', [validators.required(), validators.Length(min=3, max=25)])
+	email = StringField('Email',)
 	issue_date = DateField('Issue Date', format='%Y-%m-%d', validators=(validators.Optional(),))
 	return_date = DateField('Return Date', format='%Y-%m-%d', validators=(validators.Optional(),))
 	return_status = BooleanField('Return Status')

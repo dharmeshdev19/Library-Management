@@ -31,9 +31,9 @@
 	{% if data.book_entry_obj %}
 		<form method="POST" action="/book_issue/">
 			<h1>Book Details</h1>
-			Book Name & code :- {{data.book_entry_obj.name}}{{data.book_entry_obj.book_code}}<br>
-			Author & Publisher :- {{data.book_entry_obj.author}}{{data.book_entry_obj.publisher}}<br>
-			Look for this book :- in shelf number {{data.book_entry_obj.publisher}}
+			Book Name & code :- {{data.book_entry_obj.name}} &nbsp;&nbsp; {{data.book_entry_obj.book_code}}<br>
+			Author & Publisher :- {{data.book_entry_obj.author}} &nbsp;&nbsp; {{data.book_entry_obj.publisher}}<br>
+			Look for this book :- in shelf number {{data.book_entry_obj.shelf_name.name}}
 			<div class="form-group">
 				<input type="hidden" class="form-control" name="book_code" value="{{data.book_entry_obj.book_code}}"><br>
 			</div>
@@ -51,8 +51,8 @@
 				<input type="tel" class="form-control" id="cell_no" name="cell_no" placeholder="1234567890" pattern="[0-9]{10}" required><br>
 			</div>
 			<div class="form-group">
-				<label for="email">Borrower Email*</label><br>
-				<input type="email" class="form-control" name="email" required><br>
+				<label for="email">Borrower Email</label><br>
+				<input type="email" class="form-control" name="email"><br>
 			</div>
 			<h1>Book Issue & Return date</h1>
 			<div class="form-group">

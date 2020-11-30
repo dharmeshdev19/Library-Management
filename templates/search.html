@@ -62,6 +62,7 @@
 				<tr>
 					<th>Book Code</th>
 					<th>Name</th>
+					<th>Book Language</th>
 					<th>Author</th>
 					<th>Publisher</th>
 					<th>Price</th>
@@ -75,6 +76,7 @@
 					<tr>
 						<th>{{book.book_code}}</th>
 						<th>{{book.name}}</th>
+						<th>{{book.book_language}}</th>
 						<th>{{book.author}}</th>
 						<th>{{book.publisher}}</th>
 						<th>{{book.price}}</th>
@@ -88,10 +90,10 @@
 							</a>
 						</th>
 						<th>
-							{% if book.book_status == 1 %}
+							{% if book.book_status_name.name == 'In Library' %}
 								<a href="{{ url_for('book_issue',book_code=book.book_code)}}"><button class="btn btn-primary">Issue</button></a>
 							{% else %}
-								<button class="btn btn-primary">Issue</button>
+								<button>Issue</button>
 							{% endif %}
 						</th>
 					</tr>

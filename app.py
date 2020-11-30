@@ -8,10 +8,13 @@ from utils import *
 from form import *
 import db_config
 import datetime
-from flask import Flask, make_response, send_from_directory, send_file, Response
+from flask import Flask, make_response, send_from_directory, send_file, Response, jsonify
 from openpyxl import load_workbook
 import io
 import xlwt
+from sqlalchemy import or_, and_, select
+from flask_babel import Babel
+from flask_babel import format_datetime
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -180,16 +183,45 @@ def book_edit():
 #         flash('you need to login!', 'danger')
 #         return redirect(url_for('login'))
 
-@app.route('/book_search/', methods=['GET', 'POST'])
+from sqlalchemy.ext.declarative import DeclarativeMeta
+
+def new_alchemy_encoder():
+    _visited_objs = []
+
+    class AlchemyEncoder(json.JSONEncoder):
+        def default(self, obj):
+            if isinstance(obj.__class__, DeclarativeMeta):
+                # don't re-visit self
+                if obj in _visited_objs:
+                    return None
+                _visited_objs.append(obj)
+
+                # an SQLAlchemy class
+                fields = {}
+                for field in [x for x in dir(obj) if not x.startswith('_') and x != 'metadata']:
+                    fields[field] = obj.__getattribute__(field)
+                # a json-encodable dict
+                return fields
+
+            return json.JSONEncoder.default(self, obj)
+
+    return AlchemyEncoder
+
+@app.route('/book_search/', methods=['POST'])
 def book_search():
-    context = {}
+    book_list = []
     if request.method == 'POST':
-        data = request.form
-        search = data.get('search', None)
+        search = request.get_json()
         if search:
-            book_entry_list = book_search(BookEntry, search)
-            context['book_entry_list'] = book_entry_list
-    return render_template("book_issue.html", data=context)
+            try:
+                book_entry_obj = BookEntry.query.filter(BookEntry.book_code==int(search))
+                book_list = book_entry_json(book_entry_obj)
+            except:
+                book_entry_obj = BookEntry.query.filter(or_(
+                    BookEntry.name.contains(search),
+                ))
+                book_list = book_entry_json(book_entry_obj)
+        return json.dumps(book_list, cls=new_alchemy_encoder(), check_circular=False)
 
 @app.route('/book_issue/', methods=['GET', 'POST'])
 def book_issue():
@@ -213,6 +245,9 @@ def book_issue():
                 borrow_obj = BorrowerDetail(name=name, address=address, cell_no=int(cell_no), email=email,
                     issue_date=issue_date, return_date=return_date, return_status=False, book_entry=int(book_entry))
                 db.session.add(borrow_obj)
+                db.session.commit()
+                book_entry = BookEntry.query.filter_by(book_code=int(book_entry)).first()
+                book_entry.book_status = BookStatus.query.filter_by(name='Issued').first().id
                 db.session.commit()
                 return redirect('/')
             else:
@@ -265,12 +300,24 @@ def download_book_list():
                 sh.write(idx+1, 3, book.author)
                 sh.write(idx+1, 4, book.publisher)
                 sh.write(idx+1, 5, str(book.price))
-                sh.write(idx+1, 6, str(book.category_name))
-                sh.write(idx+1, 7, str(book.shelf_name))
-                sh.write(idx+1, 8, str(book.book_status))
+                sh.write(idx+1, 6, str(book.category_name.name))
+                sh.write(idx+1, 7, str(book.shelf_name.name))
+                sh.write(idx+1, 8, str(book.book_status_name.name))
                 sh.write(idx+1, 9, book.donated_by)
-                sh.write(idx+1, 10, '')
-                sh.write(idx+1, 11, '')
+                try:
+                    bor_detail = BorrowerDetail.query.filter(BorrowerDetail.book_entry==book.book_code).all()
+                    if bor_detail:
+                        # import pdb;pdb.set_trace();
+                        # format_datetime(bor_detail.return_date)
+                        if bor_detail[0].return_date:
+                            print(bor_detail[0].return_date)
+                            sh.write(idx+1, 10, str(bor_detail[0].return_date))
+                        if bor_detail[0].return_date < datetime.date.today():
+                            print (bor_detail[0].return_date)
+                            sh.write(idx+1, 11, str(bor_detail[0].return_date))
+                except:
+                    sh.write(idx+1, 10, '')
+                    sh.write(idx+1, 11, '')
                 idx += 1
             workbook.save(output)
             output.seek(0)
@@ -281,6 +328,11 @@ def download_book_list():
     else:
         flash('book not found!', 'danger')
         return render_template("search.html")
+
+# @app.template_filter('issue_status_filter')
+# def issue_status_filter(s):
+#     import pdb;pdb.set_trace();
+#     return s
 
 @app.route('/book_return/', methods=['GET'])
 def book_return():

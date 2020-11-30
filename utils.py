@@ -33,3 +33,23 @@ def flash_errors(form):
             field,
             errors
         ))
+
+def book_entry_json(book_entry_obj):
+    book_list = []
+    for book_entry in book_entry_obj:
+        book_list.append({
+            'book_code': book_entry.book_code,
+            'name': book_entry.name,
+            'book_language': book_entry.book_language,
+            'author': book_entry.author,
+            'publisher': book_entry.publisher,
+            'price': book_entry.price,
+            'category': book_entry.category,
+            'category_name': book_entry.category_name.name,
+            'book_shelf': book_entry.book_shelf,
+            'shelf_name': book_entry.shelf_name.name,
+            'book_status': book_entry.book_status,
+            'book_status_name': book_entry.book_status_name.name,
+            'donated_by': book_entry.donated_by
+            })
+    return book_list

@@ -3,6 +3,7 @@
 	{{ super() }}
 	{{ datepicker.loader() }} {# to load jQuery-ui #}
 	{{ datepicker.picker(id=".dp") }}
+	{{ flask_util_js.js }}
 	<style>
 		* {
 		  box-sizing: border-box;
@@ -59,6 +60,7 @@
 		<div id="header">
 			<ul id="myUL">
 			</ul>
+			<h1 id="error">Books not found!</h1>
 		</div>
 		<!-- <button type="submit" class="btn btn-primary">GO</button> -->
 	</div>
@@ -113,9 +115,12 @@
 	    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	    <script type="text/javascript">
 	    	$("#myUL").hide();
+	    	$("#error").hide();
 	    	$("#search").on('change', function() {
 	    		var searchvalue = $('#search').val();
 				console.log(searchvalue);
+				$("#myUL").hide();
+	    		$("#error").hide();
 				$.ajax({
 		            type: "POST",
 		            url: "/book_search/",
@@ -123,12 +128,24 @@
 		            data: JSON.stringify(searchvalue),       
 		            success: function(resp){
 		            	var book_list = JSON.parse("[" + resp + "]");
-		            	for (i = 0; i < book_list[0].length; i++) {
-		            		var book_code = book_list[0][i]['book_code']
-		            		console.log(book_code)
-					        $("#myUL").show();
-					        $("#header ul").append('<li><a href="#">'+book_list[0][i]['book_code'].toString()+' '+book_list[0][i]['name'].toString()+' '+book_list[0][i]['author'].toString()+'</a></li>');
-					    }
+		            	console.log(book_list[0]);
+		            	if (book_list[0].length) {
+			            	for (i = 0; i < book_list[0].length; i++) {
+			            		var book_code_id = book_list[0][i]['book_code'].toString()
+			            		var name = book_list[0][i]['name'].toString()
+			            		var author = book_list[0][i]['author'].toString()
+			            		if (book_list[0][i]['book_status_name'] == "In Library") {
+			            			var newURL = flask_util.url_for('book_issue', {book_code: book_list[0][i]['book_code']});	
+			            		} else {
+			            			var newURL = '#'
+			            		}
+			            		
+						        $("#myUL").show();
+						        $("#myUL").append('<li><a href='+newURL+'>'+book_code_id+' '+name+' '+author+'</a></li>');
+						    }
+		            	} else {
+		            		$("#error").show();
+		            	}
 		            }
 		        });
 	    	});

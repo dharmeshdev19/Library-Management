@@ -15,6 +15,7 @@ import xlwt
 from sqlalchemy import or_, and_, select
 from flask_babel import Babel
 from flask_babel import format_datetime
+from flask_util_js import FlaskUtilJs
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -353,5 +354,6 @@ if __name__ == "__main__":
     sess.init_app(app)
     bootstrap = Bootstrap(app)
     datepicker = datepicker(app)
+    fujs = FlaskUtilJs(app)
     app.debug = True
     app.run()

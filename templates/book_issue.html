@@ -90,8 +90,8 @@
 				<input type="text" id="borrower_address" class="form-control" name="address" required><br>
 			</div>
 			<div class="form-group">
-				<label for="cell_no">Borrower Cell No*</label><br>
-				<input type="tel" id="borrower_cell_no" class="form-control" id="cell_no" name="cell_no" placeholder="1234567890" pattern="[0-9]{10}" required><br>
+				<label for="mobile_no">Borrower Mobile No*</label><br>
+				<input type="tel" id="borrower_mobile_no" class="form-control" id="mobile_no" name="mobile_no" placeholder="1234567890" pattern="[0-9]{10}" required><br>
 			</div>
 			<div class="form-group">
 				<label for="email">Borrower Email</label><br>
@@ -103,11 +103,11 @@
 			<h1>Book Issue & Return date</h1>
 			<div class="form-group">
 				<label for="issue_date">Issue Date*</label><br>
-				<input type="date" id="issue_date" class="form-control" name="issue_date" value="{{data.issue_date}}" required readonly><br>
+				<input type="text" id="issue_date" class="form-control" name="issue_date" value="{{data.issue_date}}" required readonly><br>
 			</div>
 			<div class="form-group">
 				<label for="return_date">Return Date*</label><br>
-				<input type="date" id="return_date" class="form-control" name="return_date" value="{{data.return_date}}" required readonly><br>
+				<input type="text" id="return_date" class="form-control" name="return_date" value="{{data.return_date}}" required readonly><br>
 			</div>
 			<a href="/"><button>BACK</button></a>
 			<button type="submit" class="btn btn-primary">ISSUE</button>

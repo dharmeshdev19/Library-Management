@@ -227,22 +227,24 @@ def book_issued_list():
 def book_issue():
     context = {}
     if request.method == 'POST':
-        data = request.form
+        data = request.form.copy()
         search = data.get('search', None)
         if search:
             book_entry_list = book_search(BookEntry, search)
             context['book_entry_list'] = book_entry_list
         else:
+            data['issue_date'] = data['issue_date'].split()[0]
+            data['return_date'] = data['return_date'].split()[0]
             form = BorrowerDetailForm(data)
             if form.validate():
                 name = data.get('name', None)
                 address = data.get('address', None)
-                cell_no = data.get('cell_no', None)
+                mobile_no = data.get('mobile_no', None)
                 email = data.get('email', None)
                 issue_date = data.get('issue_date', None)
                 return_date = data.get('return_date', None)
                 book_entry = data.get('book_code')
-                borrow_obj = BorrowerDetail(name=name, address=address, cell_no=int(cell_no), email=email,
+                borrow_obj = BorrowerDetail(name=name, address=address, mobile_no=int(mobile_no), email=email,
                     issue_date=issue_date, return_date=return_date, return_status=False, book_entry=int(book_entry))
                 db.session.add(borrow_obj)
                 db.session.commit()
@@ -257,8 +259,11 @@ def book_issue():
     book_entry_obj = BookEntry.query.filter_by(book_code=book_code).first()
     issue_date = datetime.date.today()
     return_date = datetime.date.today() + datetime.timedelta(days=10)
-    context['issue_date'] = issue_date
-    context['return_date'] = return_date
+    # import pdb;pdb.set_trace();
+    # strftime('%Y-%m-%d')
+    # str(issue_date)+' ('+issue_date.strftime('%d %b %y')+')'
+    context['issue_date'] = str(issue_date)+' ('+issue_date.strftime('%d %b %y')+')'
+    context['return_date'] = str(return_date)+' ('+return_date.strftime('%d %b %y')+')'
     context['book_entry_obj'] = book_entry_obj
     return render_template("book_issue.html", data=context)
 

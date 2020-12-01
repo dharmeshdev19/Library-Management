@@ -72,7 +72,7 @@ def borrower_json(borrower_obj):
         borrower_list.append({
             'name': borrower.name,
             'address': borrower.address,
-            'cell_no': borrower.cell_no,
+            'mobile_no': borrower.mobile_no,
             'email': borrower.email,
             'issue_date': borrower.issue_date,
             'return_date': borrower.return_date,

@@ -39,7 +39,7 @@ class BookEntryForm(Form):
 class BorrowerDetailForm(Form):
 	name = StringField('Name', [validators.required(), validators.Length(min=1, max=25)])
 	address = StringField('Address', [validators.required(), validators.Length(min=3, max=25)])
-	cell_no = StringField('Cell No', [validators.required(), validators.Length(min=10, max=10), validators.Regexp(regex='[0-9]')])
+	mobile_no = StringField('Mobile No', [validators.required(), validators.Length(min=10, max=10), validators.Regexp(regex='[0-9]')])
 	email = StringField('Email',)
 	issue_date = DateField('Issue Date', format='%Y-%m-%d', validators=(validators.Optional(),))
 	return_date = DateField('Return Date', format='%Y-%m-%d', validators=(validators.Optional(),))

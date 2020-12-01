@@ -1,0 +1,56 @@
+{% extends 'bootstrap/base.html' %}
+{% block scripts %}
+	{{ super() }}
+	{{ datepicker.loader() }} {# to load jQuery-ui #}
+	{{ datepicker.picker(id=".dp") }}
+	<style>
+		table, th, td {
+		  border: 1px solid black;
+		  border-collapse: collapse;
+		}
+
+		table.center {
+		  margin-left: auto; 
+		  margin-right: auto;
+		}
+	</style>
+{% endblock %}
+{% block content %}
+	{% with messages = get_flashed_messages(with_categories=true) %}
+	  	{% if messages %}
+		    <ul class=flashes>
+			    {% for category, message in messages %}
+			    	<li class="alert alert={{ category }}">{{ message }}</li>
+			    {% endfor %}
+		    </ul>
+	  	{% endif %}
+	{% endwith %}
+	<div class="container">
+		<h1>Books already issued to {{data.username}}</h1>
+		<!-- <table class="center">
+		  <tr>
+		    <th>Firstname</th>
+		    <th>Lastname</th> 
+		    <th>Age</th>
+		  </tr>
+		  <tr>
+		    <td>Jill</td>
+		    <td>Smith</td>
+		    <td>50</td>
+		  </tr>
+		  <tr>
+		    <td>Eve</td>
+		    <td>Jackson</td>
+		    <td>94</td>
+		  </tr>
+		  <tr>
+		    <td>John</td>
+		    <td>Doe</td>
+		    <td>80</td>
+		  </tr>
+		</table> -->
+	</div>
+
+	{% block script %}
+	{% endblock script %}
+{% endblock content %}

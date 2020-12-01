@@ -56,7 +56,7 @@
 	<!-- <form method="POST" action="/book_issue/"> -->
 	<div class="form-group">
 		<label for="search">Enter Book Code, Name</label>
-		<input type="text" name="search" id="search" placeholder="Search.." required>
+		<input type="text" autocomplete="off" name="search" id="search" placeholder="Search.." required>
 		<div id="header">
 			<ul id="myUL">
 			</ul>
@@ -83,19 +83,22 @@
 			<h1>Borrower Details</h1>
 			<div class="form-group">
 				<label for="name">Borrower Name*</label><br>
-				<input type="text" class="form-control" name="name" required><br>
+				<input type="text" id="borrower_name" class="form-control" name="name" required><br>
 			</div>
 			<div class="form-group">
 				<label for="address">Borrower Address*</label><br>
-				<input type="text" class="form-control" name="address" required><br>
+				<input type="text" id="borrower_address" class="form-control" name="address" required><br>
 			</div>
 			<div class="form-group">
 				<label for="cell_no">Borrower Cell No*</label><br>
-				<input type="tel" class="form-control" id="cell_no" name="cell_no" placeholder="1234567890" pattern="[0-9]{10}" required><br>
+				<input type="tel" id="borrower_cell_no" class="form-control" id="cell_no" name="cell_no" placeholder="1234567890" pattern="[0-9]{10}" required><br>
 			</div>
 			<div class="form-group">
 				<label for="email">Borrower Email</label><br>
 				<input type="email" class="form-control" name="email"><br>
+			</div>
+			<div id="issued_book">
+				
 			</div>
 			<h1>Book Issue & Return date</h1>
 			<div class="form-group">
@@ -116,6 +119,7 @@
 	    <script type="text/javascript">
 	    	$("#myUL").hide();
 	    	$("#error").hide();
+	    	$("#issued_book").hide();
 	    	$("#search").on('change', function() {
 	    		var searchvalue = $('#search').val();
 				console.log(searchvalue);
@@ -149,6 +153,26 @@
 		            }
 		        });
 	    	});
+
+	    	$("#borrower_name").on('change', function() {
+	    		var searchvalue = $('#borrower_name').val();
+				console.log(searchvalue);
+				$.ajax({
+		            type: "POST",
+		            url: "/search_user/",
+		            contentType: 'application/json;charset=UTF-8',
+		            data: JSON.stringify(searchvalue),       
+		            success: function(resp){
+		            	var borrower_list = JSON.parse("[" + resp + "]");
+		            	if (borrower_list[0].length) {
+		            		var newURL = flask_util.url_for('book_issued_list', {username: borrower_list[0][0]['name']});
+		            		$("#issued_book").show();
+		            		$("#issued_book").append('<h6>Books already issued to '+borrower_list[0][0]['name']+' are '+borrower_list[0].length.toString()+' <a href='+newURL+'>(view)</a></h6>');
+		            	}
+		            }
+		        });
+	    	});
+
 	    </script>
 	{% endblock script %}
 {% endblock content %}

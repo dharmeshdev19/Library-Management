@@ -184,30 +184,6 @@ def book_edit():
 #         flash('you need to login!', 'danger')
 #         return redirect(url_for('login'))
 
-from sqlalchemy.ext.declarative import DeclarativeMeta
-
-def new_alchemy_encoder():
-    _visited_objs = []
-
-    class AlchemyEncoder(json.JSONEncoder):
-        def default(self, obj):
-            if isinstance(obj.__class__, DeclarativeMeta):
-                # don't re-visit self
-                if obj in _visited_objs:
-                    return None
-                _visited_objs.append(obj)
-
-                # an SQLAlchemy class
-                fields = {}
-                for field in [x for x in dir(obj) if not x.startswith('_') and x != 'metadata']:
-                    fields[field] = obj.__getattribute__(field)
-                # a json-encodable dict
-                return fields
-
-            return json.JSONEncoder.default(self, obj)
-
-    return AlchemyEncoder
-
 @app.route('/book_search/', methods=['POST'])
 def book_search():
     book_list = []
@@ -223,6 +199,29 @@ def book_search():
                 ))
                 book_list = book_entry_json(book_entry_obj)
         return json.dumps(book_list, cls=new_alchemy_encoder(), check_circular=False)
+
+@app.route('/search_user/', methods=['POST'])
+def search_user():
+    book_list = []
+    if request.method == 'POST':
+        borrower_name = request.get_json()
+        if borrower_name:
+            try:
+                borrower_detail_obj = BorrowerDetail.query.filter_by(name=borrower_name)
+                borrower_list = borrower_json(borrower_detail_obj)
+            except:
+                borrower_detail_obj = []
+                borrower_list = borrower_json(borrower_detail_obj)
+        return json.dumps(borrower_list, cls=new_alchemy_encoder(), check_circular=False)
+
+@app.route('/book_issued_list/', methods=['GET', 'POST'])
+def book_issued_list():
+    book_list = []
+    context = {}
+    # username = request.get_json()
+    username = 'Dharmesh Deo'
+    context['username'] = username
+    return render_template("book_issued_list.html", data=context)
 
 @app.route('/book_issue/', methods=['GET', 'POST'])
 def book_issue():
@@ -308,13 +307,9 @@ def download_book_list():
                 try:
                     bor_detail = BorrowerDetail.query.filter(BorrowerDetail.book_entry==book.book_code).all()
                     if bor_detail:
-                        # import pdb;pdb.set_trace();
-                        # format_datetime(bor_detail.return_date)
                         if bor_detail[0].return_date:
-                            print(bor_detail[0].return_date)
                             sh.write(idx+1, 10, str(bor_detail[0].return_date))
                         if bor_detail[0].return_date < datetime.date.today():
-                            print (bor_detail[0].return_date)
                             sh.write(idx+1, 11, str(bor_detail[0].return_date))
                 except:
                     sh.write(idx+1, 10, '')
@@ -332,12 +327,50 @@ def download_book_list():
 
 # @app.template_filter('issue_status_filter')
 # def issue_status_filter(s):
-#     import pdb;pdb.set_trace();
 #     return s
 
-@app.route('/book_return/', methods=['GET'])
+@app.route('/book_return/', methods=['GET', 'POST'])
 def book_return():
-    return render_template("book_return.html")
+    context = {}
+    if request.method == 'POST':
+        data = request.form
+        search = request.json
+        if search:
+            book_entry_list = issued_book_search(BookEntry, search)
+            book_entry_list = book_entry_json(book_entry_list)
+            return json.dumps(book_entry_list, cls=new_alchemy_encoder(), check_circular=False)
+        else:
+            form = BorrowerDetailForm(data)
+            if form.validate():
+                json_data = dict(data)
+                json_data['return_status'] = True
+                book_code = json_data.pop('book_code')
+                book_shelf = json_data.pop('book_shelf')
+                if book_shelf:
+                    book_entry = BorrowerDetail.query.filter_by(book_entry=book_code).update(json_data)
+                    db.session.commit()
+                
+                    book_status_obj = BookStatus.query.filter_by(name='In Library').first()
+                    book_entry_obj = BookEntry.query.filter_by(book_code=book_code).first()
+                    book_entry_obj.book_status = book_status_obj.id
+                    book_entry_obj.book_shelf = int(book_shelf)
+                    db.session.commit()
+                else:
+                    flash('Shelf id not found!', 'danger')
+                    return redirect(url_for('book_return', book_code=book_code))
+                return redirect('/')
+            else:
+                flash_errors(form)
+        return render_template("book_return.html", data=context)
+    book_code = request.args.get('book_code')
+    if book_code:
+        book_entry_obj = BookEntry.query.filter_by(book_code=book_code).first()
+        borrower_detail = BorrowerDetail.query.filter_by(book_entry=book_entry_obj.book_code, return_status=False).first()
+        shelf_list = BookShelf.query.all()
+        context['shelf_list'] = shelf_list
+        context['borrower_detail'] = borrower_detail
+        context['book_entry_obj'] = book_entry_obj
+    return render_template("book_return.html", data=context)
 
 @app.route('/overdued/', methods=['GET'])
 def overdued():

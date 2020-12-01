@@ -68,3 +68,11 @@ class BorrowerDetail(db.Model):
     return_status = db.Column(db.Boolean, default=False, nullable=False)
     book_entry = db.Column(db.Integer, db.ForeignKey('book_entry.book_code'),
         nullable=False)
+
+class LostBookUserDetail(db.Model):
+    """docstring for LostBookUserDetail"""
+    id = db.Column(db.Integer, primary_key = True)
+    recover_amount = db.Column(db.Float, nullable=True)
+    note = db.Column(db.String(500), nullable=False)
+    borrower_detail = db.Column(db.Integer, db.ForeignKey('borrower_detail.id'),
+        nullable=False)

@@ -2,7 +2,6 @@ from wtforms_alchemy import ModelForm, ModelFormField
 from sqlalchemy import or_, and_, select
 from flask import flash, json
 from sqlalchemy.ext.declarative import DeclarativeMeta
-from models import *
 
 def filter_data(BookEntry, search, category, book_status):
     try:
@@ -29,7 +28,7 @@ def book_search(BookEntry, search):
         ))
     return book_entry_obj
 
-def issued_book_search(BookEntry, search):
+def issued_book_search(BookEntry, BookStatus, search):
     try:
         book_entry_obj = BookEntry.query.filter(BookEntry.book_code==int(search))
     except:

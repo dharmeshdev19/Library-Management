@@ -336,7 +336,7 @@ def book_return():
         data = request.form
         search = request.json
         if search:
-            book_entry_list = issued_book_search(BookEntry, search)
+            book_entry_list = issued_book_search(BookEntry, BookStatus, search)
             book_entry_list = book_entry_json(book_entry_list)
             return json.dumps(book_entry_list, cls=new_alchemy_encoder(), check_circular=False)
         else:
@@ -371,6 +371,29 @@ def book_return():
         context['borrower_detail'] = borrower_detail
         context['book_entry_obj'] = book_entry_obj
     return render_template("book_return.html", data=context)
+
+@app.route('/lost_book/', methods=['GET', 'POST'])
+def lost_book():
+    data = request.form
+    json_data = dict(data)
+    book_code = json_data.pop('book_code')
+    recover_amount = json_data.get('recover_amount', None)
+    note = json_data.get('note', None)
+    borrower_detail = json_data.get('borrower_detail', None)
+    form = LostBookUserDetailForm(data)
+    if form.validate():
+        borrow_obj = LostBookUserDetail(recover_amount=recover_amount, note=note, borrower_detail=int(borrower_detail))
+        db.session.add(borrow_obj)
+        db.session.commit()
+        book_status_obj = BookStatus.query.filter_by(name='Lost').first()
+        book_entry_obj = BookEntry.query.filter_by(book_code=book_code).first()
+        book_entry_obj.book_status = book_status_obj.id
+        # book_entry_obj.book_shelf = int(book_shelf) its pending 
+        db.session.commit()
+        return redirect('/')
+    else:
+        flash_errors(form)
+        return redirect(url_for('book_return', book_code=book_code))
 
 @app.route('/overdued/', methods=['GET'])
 def overdued():

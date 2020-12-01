@@ -44,3 +44,8 @@ class BorrowerDetailForm(Form):
 	issue_date = DateField('Issue Date', format='%Y-%m-%d', validators=(validators.Optional(),))
 	return_date = DateField('Return Date', format='%Y-%m-%d', validators=(validators.Optional(),))
 	return_status = BooleanField('Return Status')
+
+class LostBookUserDetailForm(Form):
+	recover_amount = FloatField('Recover Amount', [validators.required()])
+	note = StringField('Note',)
+	

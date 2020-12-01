@@ -162,31 +162,36 @@
 				<br><br>
 			{% endif %}
 		</form>
-		<form>
-			<div id="myModal" class="modal">
-				<!-- Modal content -->
-				<div class="modal-content">
-					<span class="close">&times;</span>
-					<h3>Mark as lost (pop up)</h3>
-					<div class="form-group">
-						<label for="price">Book Price</label><br>
-						Rs 120
-					</div>
+		{% if data.book_entry_obj %}
+			<form method="POST" action="/lost_book/">
+				<div id="myModal" class="modal">
+					<!-- Modal content -->
+					<div class="modal-content">
+						<span class="close">&times;</span>
+						<h3>Mark as lost (pop up)</h3>
+						<div class="form-group">
+							<label for="price">Book Price</label><br>
+							Rs {{data.book_entry_obj.price}}
+							<input type="hidden" id="price" class="form-control" name="price" value="{{data.book_entry_obj.price}}"><br>
+							<input type="hidden" id="book_code" class="form-control" name="book_code" value="{{data.book_entry_obj.book_code}}"><br>
+							<input type="hidden" id="borrower_detail" class="form-control" name="borrower_detail" value="{{data.borrower_detail.id}}"><br>
+						</div>
 
-					<div class="form-group">
-						<label for="recovered_amount">Recovered Amount*</label><br>
-						<input type="text" id="recovered_amount" class="form-control" name="recovered_amount" required><br>
-					</div>
+						<div class="form-group">
+							<label for="recover_amount">Recovered Amount*</label><br>
+							<input type="text" id="recover_amount" class="form-control" name="recover_amount" required><br>
+						</div>
 
-					<div class="form-group">
-						<label for="recovered_amount">Recovered Amount*</label><br>
-						<input type="text" id="recovered_amount" class="form-control" name="recovered_amount"><br>
-					</div>
-					<button type="submit" class="btn btn-primary">Done</button><br><br>
+						<div class="form-group">
+							<label for="recovered_amount">Note</label><br>
+							<input type="text" id="note" class="form-control" name="note"><br>
+						</div>
+						<button type="submit" class="btn btn-primary">Done</button><br><br>
 
+					</div>
 				</div>
-			</div>
-		</form>
+			</form>
+		{% endif %}
 	</div>
 	{% block script %}
 	    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -194,6 +199,35 @@
 	    	$("#myUL").hide();
 	    	$("#error").hide();
 	    	$("#issued_book").hide();
+
+	    	$("#markLost").click(function(){
+	    		// Get the modal
+				var modal = document.getElementById("myModal");
+
+				// Get the button that opens the modal
+				var btn = document.getElementById("markLost");
+
+				// Get the <span> element that closes the modal
+				var span = document.getElementsByClassName("close")[0];
+
+				// When the user clicks the button, open the modal 
+				btn.onclick = function() {
+				  modal.style.display = "block";
+				}
+
+				// When the user clicks on <span> (x), close the modal
+				span.onclick = function() {
+				  modal.style.display = "none";
+				}
+
+				// When the user clicks anywhere outside of the modal, close it
+				window.onclick = function(event) {
+				  if (event.target == modal) {
+				    modal.style.display = "none";
+				  }
+				}
+			});
+
 	    	$("#search").on('change', function() {
 	    		var searchvalue = $('#search').val();
 				console.log(searchvalue);
@@ -221,31 +255,6 @@
 						        $("#myUL").show();
 						        $('#myUL').empty()
 						        $("#myUL").append('<li><a href='+newURL+'>'+book_code_id+' '+name+' '+author+'</a></li>');
-						        // Get the modal
-								var modal = document.getElementById("myModal");
-
-								// Get the button that opens the modal
-								var btn = document.getElementById("markLost");
-
-								// Get the <span> element that closes the modal
-								var span = document.getElementsByClassName("close")[0];
-
-								// When the user clicks the button, open the modal 
-								btn.onclick = function() {
-								  modal.style.display = "block";
-								}
-
-								// When the user clicks on <span> (x), close the modal
-								span.onclick = function() {
-								  modal.style.display = "none";
-								}
-
-								// When the user clicks anywhere outside of the modal, close it
-								window.onclick = function(event) {
-								  if (event.target == modal) {
-								    modal.style.display = "none";
-								  }
-								}
 						    }
 		            	} else {
 		            		$("#error").show();
@@ -253,25 +262,6 @@
 		            }
 		        });
 	    	});
-
-	   //  	$("#borrower_name").on('change', function() {
-	   //  		var searchvalue = $('#borrower_name').val();
-				// console.log(searchvalue);
-				// $.ajax({
-		  //           type: "POST",
-		  //           url: "/search_user/",
-		  //           contentType: 'application/json;charset=UTF-8',
-		  //           data: JSON.stringify(searchvalue),       
-		  //           success: function(resp){
-		  //           	var borrower_list = JSON.parse("[" + resp + "]");
-		  //           	if (borrower_list[0].length) {
-		  //           		var newURL = flask_util.url_for('book_issued_list', {username: borrower_list[0][0]['name']});
-		  //           		$("#issued_book").show();
-		  //           		$("#issued_book").append('<h6>Books already issued to '+borrower_list[0][0]['name']+' are '+borrower_list[0].length.toString()+' <a href='+newURL+'>(view)</a></h6>');
-		  //           	}
-		  //           }
-		  //       });
-	   //  	});
 
 	    </script>
 	{% endblock script %}

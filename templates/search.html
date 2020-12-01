@@ -83,19 +83,37 @@
 						<th>{{book.category_name.name}}</th>
 						<th>{{book.shelf_name.name}}</th>
 						<th>{{book.book_status_name.name}}</th>
-						<th>
-							<a href="{{ url_for('book_edit',book_code=book.book_code)}}">
-								<button type="submit" class="btn btn-primary">
-								Edit</button>
-							</a>
-						</th>
-						<th>
-							{% if book.book_status_name.name == 'In Library' %}
+						{% if book.book_status_name.name == 'In Library' %}
+							<th>
+								<a href="{{ url_for('book_edit',book_code=book.book_code)}}">
+									<button type="submit" class="btn btn-primary">
+									Edit</button>
+								</a>
+							</th>
+							<th>
 								<a href="{{ url_for('book_issue',book_code=book.book_code)}}"><button class="btn btn-primary">Issue</button></a>
-							{% else %}
+							</th>
+						{% elif book.book_status_name.name == 'Issued' %}
+							<th>
+								<a href="{{ url_for('book_edit',book_code=book.book_code)}}">
+									<button type="submit" class="btn btn-primary">
+									Edit</button>
+								</a>
+							</th>
+							<th>
+								<a href="{{ url_for('book_return',book_code=book.book_code)}}">
+									<button type="submit" class="btn btn-primary">
+									Return</button>
+								</a>
+							</th>
+						{% else %}
+							<th>
+								<button>Edit</button>
+							</th>
+							<th>
 								<button>Issue</button>
-							{% endif %}
-						</th>
+							</th>
+						{% endif %}
 					</tr>
 				{% endfor %}
 				

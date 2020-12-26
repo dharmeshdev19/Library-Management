@@ -6,83 +6,77 @@
 	{{ flask_util_js.js }}
 	<style>
 		* {
-		  box-sizing: border-box;
+			box-sizing: border-box;
+		}
+
+		.form-group {
+			width: 400px;
+			margin: auto;
+		}
+
+		.flex-row {
+			display: flex;
+		}
+
+		.flex-row.flex-direction-column {
+			flex-direction: column;
+		}
+
+		.flex-row.flex-align-center {
+			align-items: center;
+		}
+
+		.flex-row .flex-col.flex-grow-1 {
+			flex-grow: 1;
+		}
+
+		.text-left {
+			text-align: left;
 		}
 
 		#search {
+			width: 100%;
+			border: 1px solid #ddd;
+		}
+
+		#search:focus {
+			border: 1px solid #ddd;
+			outline: none;
+			border-radius: 3px;
+		}
+
+		/*#search {
 		  background-image: url('/css/searchicon.png');
 		  background-position: 10px 12px;
 		  background-repeat: no-repeat;
-		  width: 100%;
+		  width: 50%;
 		  font-size: 16px;
 		  padding: 12px 20px 12px 40px;
 		  border: 1px solid #ddd;
 		  margin-bottom: 12px;
-		}
+		  }*/
 
-		#myUL {
-		  list-style-type: none;
-		  padding: 0;
-		  margin: 0;
-		}
+		  #myUL {
+		  	list-style: none;
+		  	padding: 0;
+		  	margin: 0;
+		  }
 
-		#myUL li a {
-		  border: 1px solid #ddd;
-		  margin-top: -1px; /* Prevent double borders */
-		  background-color: #f6f6f6;
-		  padding: 12px;
-		  text-decoration: none;
-		  font-size: 18px;
-		  color: black;
-		  display: block
-		}
+		  #myUL li a {
+		  	border: 1px solid #ddd;
+		  	margin-top: -1px; /* Prevent double borders */
+		  	background-color: #f6f6f6;
+		  	padding: 12px;
+		  	text-decoration: none;
+		  	font-size: 18px;
+		  	color: black;
+		  	display: block;
+		  	font-size: 14px;
+		  }
 
-		#myUL li a:hover:not(.header) {
-		  background-color: #eee;
-		}
-
-		/*popup start*/
-		body {font-family: Arial, Helvetica, sans-serif;}
-
-		/* The Modal (background) */
-		.modal {
-		  display: none; /* Hidden by default */
-		  position: fixed; /* Stay in place */
-		  z-index: 1; /* Sit on top */
-		  padding-top: 100px; /* Location of the box */
-		  left: 0;
-		  top: 0;
-		  width: 100%; /* Full width */
-		  height: 100%; /* Full height */
-		  overflow: auto; /* Enable scroll if needed */
-		  background-color: rgb(0,0,0); /* Fallback color */
-		  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-		}
-
-		/* Modal Content */
-		.modal-content {
-		  background-color: #fefefe;
-		  margin: auto;
-		  padding: 20px;
-		  border: 1px solid #888;
-		  width: 80%;
-		}
-
-		/* The Close Button */
-		.close {
-		  color: #aaaaaa;
-		  float: right;
-		  font-size: 28px;
-		  font-weight: bold;
-		}
-
-		.close:hover,
-		.close:focus {
-		  color: #000;
-		  text-decoration: none;
-		  cursor: pointer;
-		}
-		/*popup end*/
+		  #myUL li a:hover:not(.header) {
+		  	background-color: #eee;
+		  }
 	</style>
 {% endblock %}
 {% block content %}
@@ -95,14 +89,18 @@
 		    </ul>
 	  	{% endif %}
 	{% endwith %}
-	<h1>RETURN A BOOK From a BORROWER</h1>
+	
 	<div class="form-group">
+		<div class="flex-col text-left">
+			<button onclick="goBack()">BACK</button>
+		</div>
+		<h4>RETURN A BOOK From a BORROWER</h4>
 		<label for="search">Enter Book Code, Name</label>
 		<input type="text" autocomplete="off" name="search" id="search" placeholder="Search.." required>
 		<div id="header">
 			<ul id="myUL">
 			</ul>
-			<h1 id="error">Books not found!</h1>
+			<h4 id="error">Books not found!</h4>
 		</div>
 		<form method="POST" action="/book_return/">
 			{% if data.book_entry_obj %}
@@ -196,6 +194,9 @@
 	{% block script %}
 	    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	    <script type="text/javascript">
+	    	function goBack() {
+			  window.history.back();
+			}
 	    	$("#myUL").hide();
 	    	$("#error").hide();
 	    	$("#issued_book").hide();
@@ -254,7 +255,7 @@
 			            		
 						        $("#myUL").show();
 						        $('#myUL').empty()
-						        $("#myUL").append('<li><a href='+newURL+'>'+book_code_id+' '+name+' '+author+'</a></li>');
+						        $("#myUL").append('<li><a href='+newURL+' style="font-weight: bold;">'+book_code_id+' '+name+' <p style="font-weight: lighter;">'+author+'</p></a></li>');
 						    }
 		            	} else {
 		            		$("#error").show();

@@ -3,6 +3,23 @@
 	{{ super() }}
 	{{ datepicker.loader() }} {# to load jQuery-ui #}
 	{{ datepicker.picker(id=".dp") }}
+	<style type="text/css">
+		table {
+		  font-family: arial, sans-serif;
+		  border-collapse: collapse;
+		  width: 100%;
+		}
+
+		td, th {
+		  border: 1px solid #dddddd;
+		  text-align: left;
+		  padding: 8px;
+		}
+
+		tr:nth-child(even) {
+		  background-color: #dddddd;
+		}
+	</style>
 {% endblock %}
 {% block content %}
 	{% with messages = get_flashed_messages(with_categories=true) %}
@@ -15,4 +32,22 @@
 	  	{% endif %}
 	{% endwith %}
 	<h1>Donation List</h1>
+	{% if data.donation_list %}
+		<table>
+			<tr>
+				<th>Book Code</th>
+				<th>Book Name</th>
+				<th>Donated By </th>
+			</tr>
+			{% for donation in data.donation_list %}
+				<tr>
+					<td>{{donation.book_code}}</td>
+					<td>{{donation.name}}</td>
+					<td>{{donation.donated_by}}</td>
+				</tr>
+			{% endfor %}
+		</table>
+	{% else %}
+		<h4>Data not available</h4>
+	{% endif %}
 {% endblock content %}

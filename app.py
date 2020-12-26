@@ -16,6 +16,8 @@ from sqlalchemy import or_, and_, select
 from flask_babel import Babel
 from flask_babel import format_datetime
 from flask_util_js import FlaskUtilJs
+from sqlalchemy import cast, DATE
+
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -26,16 +28,18 @@ app = db_config.database_config(app)[1]
 db = SQLAlchemy(app)
 from models import *
 
-# app = Flask(__name__)
+
 
 @app.route('/', methods=['GET', 'POST'])
 def homepage():
     user_id = session.get('id', None)
     if user_id:
-        return render_template("home.html")
+        username = User.query.filter_by(id=user_id).first().username.title()
+        return render_template("home.html", data={'username': username})
     else:
         flash('you need to login!', 'danger')
         return redirect(url_for('login'))
+
 
 @app.route('/login/', methods=['GET', 'POST'])
 def login():
@@ -68,11 +72,13 @@ def login():
         flash('you already login', 'danger')
         return redirect('/') 
 
+
 @app.route('/logout/', methods=['GET'])
 def logout():
     session.clear()
     flash('you logout successfully!', 'success')
     return redirect(url_for('login'))
+
 
 @app.route('/book_entry/', methods=['GET', 'POST'])
 def book_entry():
@@ -115,6 +121,7 @@ def book_entry():
         flash('you need to login!', 'danger')
         return redirect(url_for('login'))
 
+
 @app.route('/search/', methods=['GET', 'POST'])
 def search():
     context={}
@@ -141,6 +148,7 @@ def search():
         book_entry_obj = filter_data(BookEntry, search, category, book_status)
         context['book_entry_obj'] = book_entry_obj.paginate(int(page), 5, False)
     return render_template("search.html", data=context)
+
 
 @app.route('/book_edit/', methods=['GET', 'POST'])
 def book_edit():
@@ -172,6 +180,7 @@ def book_edit():
         flash('you need to login!', 'danger')
         return redirect(url_for('login'))
 
+
 # @app.route('/book_entry_detail/', methods=['GET', 'POST'])
 # def book_entry_detail():
 #     if session.get('id'):
@@ -183,6 +192,7 @@ def book_edit():
 #     else:
 #         flash('you need to login!', 'danger')
 #         return redirect(url_for('login'))
+
 
 @app.route('/book_search/', methods=['POST'])
 def book_search():
@@ -200,6 +210,7 @@ def book_search():
                 book_list = book_entry_json(book_entry_obj)
         return json.dumps(book_list, cls=new_alchemy_encoder(), check_circular=False)
 
+
 @app.route('/search_user/', methods=['POST'])
 def search_user():
     book_list = []
@@ -214,6 +225,7 @@ def search_user():
                 borrower_list = borrower_json(borrower_detail_obj)
         return json.dumps(borrower_list, cls=new_alchemy_encoder(), check_circular=False)
 
+
 @app.route('/book_issued_list/', methods=['GET', 'POST'])
 def book_issued_list():
     book_list = []
@@ -222,6 +234,7 @@ def book_issued_list():
     username = 'Dharmesh Deo'
     context['username'] = username
     return render_template("book_issued_list.html", data=context)
+
 
 @app.route('/book_issue/', methods=['GET', 'POST'])
 def book_issue():
@@ -259,13 +272,11 @@ def book_issue():
     book_entry_obj = BookEntry.query.filter_by(book_code=book_code).first()
     issue_date = datetime.date.today()
     return_date = datetime.date.today() + datetime.timedelta(days=10)
-    # import pdb;pdb.set_trace();
-    # strftime('%Y-%m-%d')
-    # str(issue_date)+' ('+issue_date.strftime('%d %b %y')+')'
     context['issue_date'] = str(issue_date)+' ('+issue_date.strftime('%d %b %y')+')'
     context['return_date'] = str(return_date)+' ('+return_date.strftime('%d %b %y')+')'
     context['book_entry_obj'] = book_entry_obj
     return render_template("book_issue.html", data=context)
+
 
 @app.route('/download_book_list/', methods=['GET'])
 def download_book_list():
@@ -285,14 +296,14 @@ def download_book_list():
             sh = workbook.add_sheet('Book List')
             #add headers
             sh.write(0, 0, 'Book Code')
-            sh.write(0, 1, 'Name')
+            sh.write(0, 1, 'Book Name')
             sh.write(0, 2, 'Book Language')
-            sh.write(0, 3, 'Author')
-            sh.write(0, 4, 'Publisher')
+            sh.write(0, 3, 'Book Author')
+            sh.write(0, 4, 'Book Publisher')
             sh.write(0, 5, 'Price')
             sh.write(0, 6, 'Category')
             sh.write(0, 7, 'Shelf')
-            sh.write(0, 8, 'Status')
+            sh.write(0, 8, 'Book Status in Library')
             sh.write(0, 9, 'Donated By')
             sh.write(0, 10, 'Return Date')
             sh.write(0, 11, 'Overdue')
@@ -330,9 +341,11 @@ def download_book_list():
         flash('book not found!', 'danger')
         return render_template("search.html")
 
+
 # @app.template_filter('issue_status_filter')
 # def issue_status_filter(s):
 #     return s
+
 
 @app.route('/book_return/', methods=['GET', 'POST'])
 def book_return():
@@ -377,6 +390,7 @@ def book_return():
         context['book_entry_obj'] = book_entry_obj
     return render_template("book_return.html", data=context)
 
+
 @app.route('/lost_book/', methods=['GET', 'POST'])
 def lost_book():
     data = request.form
@@ -400,13 +414,21 @@ def lost_book():
         flash_errors(form)
         return redirect(url_for('book_return', book_code=book_code))
 
+
 @app.route('/overdued/', methods=['GET'])
 def overdued():
-    return render_template("overdued.html")
+    context = {}
+    overdued_list = BookEntry.query.join(BorrowerDetail).filter(BorrowerDetail.return_date < datetime.date.today())
+    context['overdued_list'] = overdued_list.all()
+    return render_template("overdued.html", data=context)
+
 
 @app.route('/donation_list/', methods=['GET'])
 def donation_list():
-    return render_template("donation_list.html")
+    context = {}
+    donation_list = BookEntry.query.filter(BookEntry.donated_by.isnot(None))
+    context['donation_list'] = donation_list
+    return render_template("donation_list.html", data=context)
 
 if __name__ == "__main__":
     app.secret_key = 'super secret key'

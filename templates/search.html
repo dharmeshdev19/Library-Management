@@ -20,6 +20,10 @@
 		tr:nth-child(even) {
 		  background-color: #dddddd;
 		}
+
+		input[type=text], input[type=number], select {
+    		height: 30px;
+    	}
 	</style>
 {% endblock %}
 {% block content %}
@@ -32,7 +36,7 @@
 		    </ul>
 	  	{% endif %}
 	{% endwith %}
-	<h1>LIBRARY BOOKS</h1>
+	<h3>LIBRARY BOOKS</h3>
 	<form method="POST" action="/search/">
 		<div class="form-group">
 			<label for="search">Search</label>
@@ -51,7 +55,7 @@
 					<option value="{{each.id}}">{{each.name}}</option>
 				{% endfor %}
 			</select>
-			<button type="submit" class="btn btn-primary">GO</button>
+			<button type="submit" class="btn btn-primary" style="height: 30px;">GO</button>
 		</div>
 		
 	</form>
@@ -119,7 +123,7 @@
 				
 			</table>
 		{% else %}
-			<H1>Books not found!</H1>
+			<H3>Books not found!</H3>
 		{% endif %}
 		{% for page_num in data.book_entry_obj.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
 			{% if page_num %}

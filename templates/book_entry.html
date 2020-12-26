@@ -3,6 +3,67 @@
 	{{ super() }}
 	{{ datepicker.loader() }} {# to load jQuery-ui #}
 	{{ datepicker.picker(id=".dp") }}
+	<style>
+		* {
+			box-sizing: border-box;
+		}
+
+		.form-group {
+			width: 400px;
+			margin: 60px auto auto auto;
+			border: 1px solid #ddd;
+			padding: 10px;
+			background-color: #ddd;
+			box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  			transition: 0.3s;
+		}
+
+		.flex-row {
+			display: flex;
+			padding: 5px 0;
+		}
+
+		.flex-no-wrap {
+			flex-wrap: nowrap;
+		}
+
+		.flex-justify-content-right {
+			justify-content: flex-end;
+		}
+
+		.flex-row.flex-direction-column {
+			flex-direction: column;
+		}
+
+		.flex-row.flex-align-center {
+			align-items: center;
+		}
+
+		.flex-row .flex-col.flex-grow-1 {
+			flex-grow: 1;
+		}
+
+		.text-left {
+			text-align: left;
+		}
+		.flex-label {
+	        display: flex;
+	        flex-wrap: wrap;
+	        margin: 10px;
+    	}
+    	.label-width {
+    		min-width: 150px;
+    	}
+
+    	.text-center {
+    		text-align: center;
+    	}
+
+    	input[type=text], input[type=number], select {
+    		width: 100%;
+    		height: 30px;
+    	}
+	</style>
 {% endblock %}
 {% block content %}
 	{% with messages = get_flashed_messages(with_categories=true) %}
@@ -14,59 +75,132 @@
 		    </ul>
 	  	{% endif %}
 	{% endwith %}
-	<div class="container">
-		<div id="enter_new_book" class="row justify-content-center">
-			<div class="form-group col-md-4 col-md-offset-5 align-center ">
-				<h3>ENTER NEW BOOK</h3>
-				<form method="POST" action="/book_entry/">
-					<div class="form-group">
-						<label for="name">Name*</label>
-						<input id="name" type="text" class="form-control" name="name" required>
-					</div>
-					<div class="form-group">
-						<label for="author">Author</label>
-						<input id="author" type="text" class="form-control" name="author">
-					</div>
-					<div class="form-group">
-						<label for="publisher">Publisher</label>
-						<input id="publisher" type="text" class="form-control" name="publisher">
-					</div>
-					<div class="form-group">
-						<label for="book_language">Book Language*</label>
-						<input id="book_language" type="text" class="form-control" name="book_language" required>
-					</div>
-					<div class="form-group">
-						<label for="price">Price</label><br>
-						<input type="number" placeholder="0.00" name="price" min="0" step="0.01" title="Currency" pattern="^\d+(?:\.\d{1,2})?$" onblur="this.parentNode.parentNode.style.backgroundColor=/^\d+(?:\.\d{1,2})?$/.test(this.value)">
-					</div>
-					<div class="form-group">
-						<label for="category">Category*</label><br>
-						<select name="category" id="category" required>
-							<option value="">Select Category</option>
-							{% for each in data.category_list %}
-								<option value="{{each.id}}">{{each.name}}</option>
-							{% endfor %}
-						</select>
-					</div>
-					<div class="form-group">
-						<label for="book_shelf_number">Book Shelf Number*</label><br>
-						<select name="book_shelf_number" id="book_shelf_number" required>
-							<option value="">Select Shelf Number</option>
-							{% for each in data.shelf_list %}
-								<option value="{{each.id}}">{{each.name}}</option>
-							{% endfor %}
-						</select>
-					</div>
-					<div class="form-group">
-						<label for="donated_by">Donated by</label>
-						<input id="donated_by" type="text" class="form-control" name="donated_by">
-					</div>
-					<button onclick="window.location.href='/'">BACK</button>
-					<button id="enter_book" class="btn btn-primary">SUBMIT</button>
-				</form>
-			</div>
+	<div class="form-group">
+		<div class="text-center">
+			<h3>ENTER NEW BOOK</h3>
 		</div>
+		<form method="POST" action="/book_entry/">
+			<div class="flex-row">
+				<div class="flex-col label-width">
+					<label for="name">Name*</label>
+				</div>
+				<div class="flex-col flex-grow-1">
+					<input id="name" type="text" name="name" required>
+				</div>
+			</div>
+
+			<div class="flex-row">
+				<div class="flex-col label-width">
+					<label for="author">Author</label>
+				</div>
+				<div class="flex-col flex-grow-1">
+					<input id="author" type="text" name="author">
+				</div>
+			</div>
+
+			<div class="flex-row">
+				<div class="flex-col label-width">
+					<label for="publisher">Publisher</label>
+				</div>
+				<div class="flex-col flex-grow-1">
+					<input id="publisher" type="text" name="publisher">
+				</div>
+			</div>
+
+			<div class="flex-row">
+				<div class="flex-col label-width">
+					<label for="book_language">Book Language*</label>
+				</div>
+				<div class="flex-col flex-grow-1">
+					<input id="book_language" type="text" name="book_language" required>
+				</div>
+			</div>
+
+			<div class="flex-row">
+				<div class="flex-col label-width">
+					<label for="price">Price</label>
+				</div>
+				<div class="flex-col flex-grow-1">
+					<input type="number" placeholder="0.00" name="price" min="0" step="0.01" title="Currency" pattern="^\d+(?:\.\d{1,2})?$" onblur="this.parentNode.parentNode.style.backgroundColor=/^\d+(?:\.\d{1,2})?$/.test(this.value)">
+				</div>
+			</div>
+
+			<div class="flex-row">
+				<div class="flex-col label-width">
+					<label for="category">Category*</label>
+				</div>
+				<div class="flex-col flex-grow-1">
+					<select name="category" id="category" required>
+						<option value="">Select Category</option>
+						{% for each in data.category_list %}
+							<option value="{{each.id}}">{{each.name}}</option>
+						{% endfor %}
+					</select>
+				</div>
+			</div>
+
+			<div class="flex-row">
+				<div class="flex-col label-width">
+					<label for="book_shelf_number">Book Shelf Number*</label>
+				</div>
+				<div class="flex-col flex-grow-1">
+					<select name="book_shelf_number" id="book_shelf_number" required>
+						<option value="">Select Shelf Number</option>
+						{% for each in data.shelf_list %}
+							<option value="{{each.id}}">{{each.name}}</option>
+						{% endfor %}
+					</select>
+				</div>
+			</div>
+
+			<div class="flex-row">
+				<div class="flex-col label-width">
+					<label for="donated_by">Donated by</label>
+				</div>
+				<div class="flex-col flex-grow-1">
+					<input id="donated_by" type="text" name="donated_by">
+				</div>
+			</div>
+
+			<div class="flex-row">
+				<div class="flex-col" style="margin-right: 10px;">
+					<button onclick="window.location.href='/'">BACK</button>
+				</div>
+				<div class="flex-col">
+					<button id="enter_book">SUBMIT</button>
+				</div>
+			</div>
+
+		</form>
 	</div>
+	<!-- <div class="container ">
+		<div class="form-group col-md-4 col-md-offset-4 align-center " style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); background-color: #f1f1f1; margin-top: 50px;">
+			<div class="form-group row">
+				<h3 style="text-align: center;"><label>ENTER NEW BOOK</label></h3>
+			</div>
+			<form method="POST" action="/book_entry/">
+				
+				<div class="form-group row">
+					
+					
+				</div>
+				<div class="form-group row">
+					<br>
+					
+				</div>
+				<div class="form-group row">
+					
+					
+				</div>
+				<div class="form-group row">
+					
+				</div>
+				<div class="form-group row">
+					
+				</div>
+			</form>
+		</div>
+	</div> -->
 
 	{% block script %}
 	{% endblock script %}

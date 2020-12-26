@@ -71,7 +71,7 @@
 						<label for="donated_by">Donated by</label>
 						<input id="donated_by" type="text" class="form-control" name="donated_by" value="{{data.book_data.donated_by}}">
 					</div>
-					<button onclick="window.location.href='/'">BACK</button>
+					<button onclick="goBack()">BACK</button>
 					<button id="enter_book" class="btn btn-primary">SUBMIT</button>
 				</form>
 			</div>
@@ -79,5 +79,10 @@
 	</div>
 
 	{% block script %}
+		<script type="text/javascript">
+			function goBack() {
+			  window.history.back();
+			}
+		</script>
 	{% endblock script %}
 {% endblock content %}

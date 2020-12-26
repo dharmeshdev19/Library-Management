@@ -44,7 +44,7 @@ def flash_errors(form):
         flash(u"Error in the %s field - %s" % (
             field,
             errors
-        ))
+        ), 'danger')
 
 def book_entry_json(book_entry_obj):
     book_list = []

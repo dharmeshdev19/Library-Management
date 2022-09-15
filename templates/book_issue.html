@@ -3,16 +3,230 @@
 	{{ super() }}
 	{{ datepicker.loader() }} {# to load jQuery-ui #}
 	{{ datepicker.picker(id=".dp") }}
+	{{ flask_util_js.js }}
+	<style>
+		* {
+			box-sizing: border-box;
+		}
+
+		.form-group {
+			width: 400px;
+			margin: auto;
+		}
+
+		.flex-row {
+			display: flex;
+		}
+
+		.flex-row.flex-direction-column {
+			flex-direction: column;
+		}
+
+		.flex-row.flex-align-center {
+			align-items: center;
+		}
+
+		.flex-row .flex-col.flex-grow-1 {
+			flex-grow: 1;
+		}
+
+		.text-left {
+			text-align: left;
+		}
+
+		#search {
+			width: 100%;
+			border: 1px solid #ddd;
+		}
+
+		#search:focus {
+			border: 1px solid #ddd;
+			outline: none;
+			border-radius: 3px;
+		}
+
+		/*#search {
+		  background-image: url('/css/searchicon.png');
+		  background-position: 10px 12px;
+		  background-repeat: no-repeat;
+		  width: 50%;
+		  font-size: 16px;
+		  padding: 12px 20px 12px 40px;
+		  border: 1px solid #ddd;
+		  margin-bottom: 12px;
+		  }*/
+
+		  #myUL {
+		  	list-style: none;
+		  	padding: 0;
+		  	margin: 0;
+		  }
+
+		  #myUL li a {
+		  	border: 1px solid #ddd;
+		  	margin-top: -1px; /* Prevent double borders */
+		  	background-color: #f6f6f6;
+		  	padding: 12px;
+		  	text-decoration: none;
+		  	font-size: 18px;
+		  	color: black;
+		  	display: block;
+		  	font-size: 14px;
+		  }
+
+		  #myUL li a:hover:not(.header) {
+		  	background-color: #eee;
+		  }
+	</style>
 {% endblock %}
 {% block content %}
 	{% with messages = get_flashed_messages(with_categories=true) %}
-	  	{% if messages %}
-		    <ul class=flashes>
-			    {% for category, message in messages %}
-			    	<li class="alert alert={{ category }}">{{ message }}</li>
-			    {% endfor %}
-		    </ul>
-	  	{% endif %}
+		{% if messages %}
+		<ul class=flashes>
+			{% for category, message in messages %}
+			<li class="alert alert={{ category }}">{{ message }}</li>
+			{% endfor %}
+		</ul>
+		{% endif %}
 	{% endwith %}
-	<h1>Book Issue</h1>
+	<!-- <form method="POST" action="/book_issue/"> -->
+	<div class="form-group flex-row flex-direction-column">
+		<div class="flex-col text-left">
+			<button onclick="goBack()">BACK</button>
+		</div>
+		<div class="flex-col text-left">
+			<h3>ISSUE A BOOK TO A BORROWER</h3>
+		</div>
+		<div class="flex-col text-left">
+			<label for="search">Enter Book Code, Name</label>
+		</div>
+		<div class="flex-col text-left">
+			<input type="text" autocomplete="off" name="search" id="search" placeholder="Search.." required>
+		</div>
+		<div id="header">
+			<ul id="myUL">
+			</ul>
+			<h3 id="error">Books not found!</h3>
+		</div>
+		<!-- <button type="submit" class="btn btn-primary">GO</button> -->
+	</div>
+	<!-- </form> -->
+	{% if data.book_entry_list %}
+		{% for book in data.book_entry_list %}
+			{{book.book_code}} {{book.name}} {{book.author}}<br>
+		{% endfor %}
+	{% endif %}
+
+	{% if data.book_entry_obj %}
+		<form method="POST" action="/book_issue/">
+			<div class="form-group">
+				<h3>Book Details</h3>
+				Book Name & code :- {{data.book_entry_obj.name}} &nbsp;&nbsp; {{data.book_entry_obj.book_code}}<br>
+				Author & Publisher :- {{data.book_entry_obj.author}} &nbsp;&nbsp; {{data.book_entry_obj.publisher}}<br>
+				Look for this book :- in shelf number {{data.book_entry_obj.shelf_name.name}}
+			</div>
+			<div class="form-group">
+				<input type="hidden" class="form-control" name="book_code" value="{{data.book_entry_obj.book_code}}"><br>
+			</div>
+			<div class="form-group">
+				<h3>Borrower Details</h3>
+				<label for="name">Borrower Name*</label><br>
+				<input type="text" id="borrower_name" class="form-control" name="name" required><br>
+			</div>
+			<div class="form-group">
+				<label for="address">Borrower Address*</label><br>
+				<input type="text" id="borrower_address" class="form-control" name="address" required><br>
+			</div>
+			<div class="form-group">
+				<label for="mobile_no">Borrower Mobile No*</label><br>
+				<input type="tel" id="borrower_mobile_no" class="form-control" id="mobile_no" name="mobile_no" placeholder="1234567890" pattern="[0-9]{10}" required><br>
+			</div>
+			<div class="form-group">
+				<label for="email">Borrower Email</label><br>
+				<input type="email" class="form-control" name="email"><br>
+			</div>
+			<div class="form-group">
+				<div id="issued_book">
+			</div>
+			</div>
+			<div class="form-group">
+				<h3>Book Issue & Return date</h3>
+				<label for="issue_date">Issue Date*</label><br>
+				<input type="text" id="issue_date" class="form-control" name="issue_date" value="{{data.issue_date}}" required readonly><br>
+			</div>
+			<div class="form-group">
+				<label for="return_date">Return Date*</label><br>
+				<input type="text" id="return_date" class="form-control" name="return_date" value="{{data.return_date}}" required readonly><br>
+			</div>
+			<div class="form-group">
+				<a onclick="goBack()"><button>BACK</button></a>
+				<button type="submit" class="btn btn-primary">ISSUE</button>
+				<br><br>
+			</div>
+		</form>
+	{% endif %}
+	{% block script %}
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+		<script type="text/javascript">
+			function goBack() {
+			  window.history.back();
+			}
+			$("#myUL").hide();
+			$("#error").hide();
+			$("#issued_book").hide();
+			$("#search").on('change', function() {
+				var searchvalue = $('#search').val();
+				console.log(searchvalue);
+				$("#myUL").hide();
+				$("#error").hide();
+				$.ajax({
+					type: "POST",
+					url: "/book_search/",
+					contentType: 'application/json;charset=UTF-8',
+					data: JSON.stringify(searchvalue),       
+					success: function(resp){
+						var book_list = JSON.parse("[" + resp + "]");
+						console.log(book_list[0]);
+						if (book_list[0].length) {
+							for (i = 0; i < book_list[0].length; i++) {
+								var book_code_id = book_list[0][i]['book_code'].toString()
+								var name = book_list[0][i]['name'].toString()
+								var author = book_list[0][i]['author'].toString()
+								if (book_list[0][i]['book_status_name'] == "In Library") {
+									var newURL = flask_util.url_for('book_issue', {book_code: book_list[0][i]['book_code']});	
+								} else {
+									var newURL = '#'
+								}
+
+								$("#myUL").show();
+								$("#myUL").append('<li><a href='+newURL+' style="font-weight: bold;">'+book_code_id+' '+name+' <p style="font-weight: lighter;">'+author+'</p></a></li>');
+							}
+						} else {
+							$("#error").show();
+						}
+					}
+				});
+			});
+
+			$("#borrower_name").on('change', function() {
+				var searchvalue = $('#borrower_name').val();
+				console.log(searchvalue);
+				$.ajax({
+					type: "POST",
+					url: "/search_user/",
+					contentType: 'application/json;charset=UTF-8',
+					data: JSON.stringify(searchvalue),       
+					success: function(resp){
+						var borrower_list = JSON.parse("[" + resp + "]");
+						if (borrower_list[0].length) {
+							var newURL = flask_util.url_for('book_issued_list', {username: borrower_list[0][0]['name']});
+							$("#issued_book").show();
+							$("#issued_book").append('<h6>Books already issued to '+borrower_list[0][0]['name']+' are '+borrower_list[0].length.toString()+' <a href='+newURL+'>(view)</a></h6>');
+						}
+					}
+				});
+			});
+
+		</script>
+	{% endblock script %}
 {% endblock content %}

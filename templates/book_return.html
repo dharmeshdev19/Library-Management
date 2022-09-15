@@ -3,6 +3,81 @@
 	{{ super() }}
 	{{ datepicker.loader() }} {# to load jQuery-ui #}
 	{{ datepicker.picker(id=".dp") }}
+	{{ flask_util_js.js }}
+	<style>
+		* {
+			box-sizing: border-box;
+		}
+
+		.form-group {
+			width: 400px;
+			margin: auto;
+		}
+
+		.flex-row {
+			display: flex;
+		}
+
+		.flex-row.flex-direction-column {
+			flex-direction: column;
+		}
+
+		.flex-row.flex-align-center {
+			align-items: center;
+		}
+
+		.flex-row .flex-col.flex-grow-1 {
+			flex-grow: 1;
+		}
+
+		.text-left {
+			text-align: left;
+		}
+
+		#search {
+			width: 100%;
+			border: 1px solid #ddd;
+		}
+
+		#search:focus {
+			border: 1px solid #ddd;
+			outline: none;
+			border-radius: 3px;
+		}
+
+		/*#search {
+		  background-image: url('/css/searchicon.png');
+		  background-position: 10px 12px;
+		  background-repeat: no-repeat;
+		  width: 50%;
+		  font-size: 16px;
+		  padding: 12px 20px 12px 40px;
+		  border: 1px solid #ddd;
+		  margin-bottom: 12px;
+		  }*/
+
+		  #myUL {
+		  	list-style: none;
+		  	padding: 0;
+		  	margin: 0;
+		  }
+
+		  #myUL li a {
+		  	border: 1px solid #ddd;
+		  	margin-top: -1px; /* Prevent double borders */
+		  	background-color: #f6f6f6;
+		  	padding: 12px;
+		  	text-decoration: none;
+		  	font-size: 18px;
+		  	color: black;
+		  	display: block;
+		  	font-size: 14px;
+		  }
+
+		  #myUL li a:hover:not(.header) {
+		  	background-color: #eee;
+		  }
+	</style>
 {% endblock %}
 {% block content %}
 	{% with messages = get_flashed_messages(with_categories=true) %}
@@ -14,5 +89,181 @@
 		    </ul>
 	  	{% endif %}
 	{% endwith %}
-	<h1>Book Return</h1>
+	
+	<div class="form-group">
+		<div class="flex-col text-left">
+			<button onclick="goBack()">BACK</button>
+		</div>
+		<h4>RETURN A BOOK From a BORROWER</h4>
+		<label for="search">Enter Book Code, Name</label>
+		<input type="text" autocomplete="off" name="search" id="search" placeholder="Search.." required>
+		<div id="header">
+			<ul id="myUL">
+			</ul>
+			<h4 id="error">Books not found!</h4>
+		</div>
+		<form method="POST" action="/book_return/">
+			{% if data.book_entry_obj %}
+				<h3>Book Details</h3>
+				<div class="form-group">
+					<label for="name">Book Name & code</label><br>
+					{{data.book_entry_obj.name}} &nbsp;&nbsp; {{data.book_entry_obj.book_code}}
+				</div>
+
+				<div class="form-group">
+					<label for="name">Author & Publisher</label><br>
+					{{data.book_entry_obj.author}} &nbsp;&nbsp; {{data.book_entry_obj.publisher}}
+				</div>
+
+				<div class="form-group">
+					<label for="name">Category</label><br>
+					{{data.book_entry_obj.category_name.name}}
+				</div>
+			{% endif %}
+			{% if data.borrower_detail %}
+				<h3>Borrower Details</h3>
+				<div class="form-group">
+					<input type="hidden" class="form-control" name="book_code" value="{{data.book_entry_obj.book_code}}"><br>
+				</div>
+				<div class="form-group">
+					<label for="name">Borrower Name*</label><br>
+					<input type="text" id="name" class="form-control" name="name"  value="{{data.borrower_detail.name}}" required readonly><br>
+				</div>
+
+				<div class="form-group">
+					<label for="address">Borrower Address*</label><br>
+					<input type="text" id="address" class="form-control" name="address" value="{{data.borrower_detail.address}}" required readonly><br>
+				</div>
+
+				<div class="form-group">
+					<label for="mobile_no">Borrower Mobile No*</label><br>
+					<input type="tel" class="form-control" id="mobile_no" name="mobile_no" placeholder="1234567890" pattern="[0-9]{10}" value="{{data.borrower_detail.mobile_no}}" required readonly><br>
+				</div>
+
+				<!-- <div class="form-group">
+					<label for="shelf">Keep in Shelf no	</label><br>
+					<input type="text" id="shelf" class="form-control" name="shelf"><br>
+				</div> -->
+				<div class="form-group">
+					<label for="shelf">Keep in Shelf no	</label><br>
+					<select name="book_shelf" id="book_shelf" required>
+						<option value="">Select Shelf Number</option>
+						{% for each in data.shelf_list %}
+							<option value="{{each.id}}">{{each.name}}</option>
+						{% endfor %}
+					</select>
+				</div>
+
+				<button type="button" id="markLost">MARK AS LOST</button>
+				<a href="/"><button type="button">BACK</button></a>
+				<button type="submit" class="btn btn-primary">RETURN</button>
+				<br><br>
+			{% endif %}
+		</form>
+		{% if data.book_entry_obj %}
+			<form method="POST" action="/lost_book/">
+				<div id="myModal" class="modal">
+					<!-- Modal content -->
+					<div class="modal-content">
+						<span class="close">&times;</span>
+						<h3>Mark as lost (pop up)</h3>
+						<div class="form-group">
+							<label for="price">Book Price</label><br>
+							Rs {{data.book_entry_obj.price}}
+							<input type="hidden" id="price" class="form-control" name="price" value="{{data.book_entry_obj.price}}"><br>
+							<input type="hidden" id="book_code" class="form-control" name="book_code" value="{{data.book_entry_obj.book_code}}"><br>
+							<input type="hidden" id="borrower_detail" class="form-control" name="borrower_detail" value="{{data.borrower_detail.id}}"><br>
+						</div>
+
+						<div class="form-group">
+							<label for="recover_amount">Recovered Amount*</label><br>
+							<input type="text" id="recover_amount" class="form-control" name="recover_amount" required><br>
+						</div>
+
+						<div class="form-group">
+							<label for="recovered_amount">Note</label><br>
+							<input type="text" id="note" class="form-control" name="note"><br>
+						</div>
+						<button type="submit" class="btn btn-primary">Done</button><br><br>
+
+					</div>
+				</div>
+			</form>
+		{% endif %}
+	</div>
+	{% block script %}
+	    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	    <script type="text/javascript">
+	    	function goBack() {
+			  window.history.back();
+			}
+	    	$("#myUL").hide();
+	    	$("#error").hide();
+	    	$("#issued_book").hide();
+
+	    	$("#markLost").click(function(){
+	    		// Get the modal
+				var modal = document.getElementById("myModal");
+
+				// Get the button that opens the modal
+				var btn = document.getElementById("markLost");
+
+				// Get the <span> element that closes the modal
+				var span = document.getElementsByClassName("close")[0];
+
+				// When the user clicks the button, open the modal 
+				btn.onclick = function() {
+				  modal.style.display = "block";
+				}
+
+				// When the user clicks on <span> (x), close the modal
+				span.onclick = function() {
+				  modal.style.display = "none";
+				}
+
+				// When the user clicks anywhere outside of the modal, close it
+				window.onclick = function(event) {
+				  if (event.target == modal) {
+				    modal.style.display = "none";
+				  }
+				}
+			});
+
+	    	$("#search").on('change', function() {
+	    		var searchvalue = $('#search').val();
+				console.log(searchvalue);
+				$("#myUL").hide();
+	    		$("#error").hide();
+				$.ajax({
+		            type: "POST",
+		            url: "/book_return/",
+		            contentType: 'application/json;charset=UTF-8',
+		            data: JSON.stringify(searchvalue),       
+		            success: function(resp){
+		            	var book_list = JSON.parse("[" + resp + "]");
+		            	console.log(book_list[0]);
+		            	if (book_list[0].length) {
+			            	for (i = 0; i < book_list[0].length; i++) {
+			            		var book_code_id = book_list[0][i]['book_code'].toString()
+			            		var name = book_list[0][i]['name'].toString()
+			            		var author = book_list[0][i]['author'].toString()
+			            		if (book_list[0][i]['book_status_name'] == "Issued") {
+			            			var newURL = flask_util.url_for('book_return', {book_code: book_list[0][i]['book_code']});	
+			            		} else {
+			            			var newURL = '#'
+			            		}
+			            		
+						        $("#myUL").show();
+						        $('#myUL').empty()
+						        $("#myUL").append('<li><a href='+newURL+' style="font-weight: bold;">'+book_code_id+' '+name+' <p style="font-weight: lighter;">'+author+'</p></a></li>');
+						    }
+		            	} else {
+		            		$("#error").show();
+		            	}
+		            }
+		        });
+	    	});
+
+	    </script>
+	{% endblock script %}
 {% endblock content %}

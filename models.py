@@ -1,6 +1,5 @@
-from app import *
+from app import db
 
-#Creating model table for our CRUD database
 class User(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(100), nullable=False)
@@ -40,22 +39,40 @@ class BookStatus(db.Model):
 
 class BookEntry(db.Model):
     """docstring for BookEntry"""
-    # id = db.Column(db.Integer, primary_key = True)
-    __tablename__ = 'book_entry'
-    __searchable__ = ['name', 'author','publisher']
-
     book_code = db.Column(db.Integer, db.Sequence('seq_reg_id', start=1000, increment=1), primary_key = True)
-    name = db.Column(db.String(100), nullable=False)
-    author = db.Column(db.String(100), nullable=False)
-    publisher = db.Column(db.String(100), nullable=False)
-    price = db.Column(db.Float, nullable=False)
+    name = db.Column(db.String(500), nullable=False)
+    book_language = db.Column(db.String(100), nullable=False)
+    author = db.Column(db.String(100), nullable=True)
+    publisher = db.Column(db.String(100), nullable=True)
+    price = db.Column(db.Float, nullable=True)
     category = db.Column(db.Integer, db.ForeignKey('category.id'),
         nullable=False)
+    category_name = db.relationship("Category", foreign_keys=category)
     book_shelf = db.Column(db.Integer, db.ForeignKey('book_shelf.id'),
         nullable=False)
+    shelf_name = db.relationship("BookShelf", foreign_keys=book_shelf)
     book_status = db.Column(db.Integer, db.ForeignKey('book_status.id'),
         nullable=False)
+    book_status_name = db.relationship("BookStatus", foreign_keys=book_status)
     donated_by = db.Column(db.String(100), nullable=True)
 
+class BorrowerDetail(db.Model):
+    """docstring for BorrowerDetail"""
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String(100), nullable=False)
+    address = db.Column(db.String(1000), nullable=False)
+    mobile_no = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=True)
+    issue_date = db.Column(db.Date, nullable=False)
+    return_date = db.Column(db.Date, nullable=False)
+    return_status = db.Column(db.Boolean, default=False, nullable=False)
+    book_entry = db.Column(db.Integer, db.ForeignKey('book_entry.book_code'),
+        nullable=False)
 
-flask_whooshalchemy.whoosh_index(app, BookEntry)
+class LostBookUserDetail(db.Model):
+    """docstring for LostBookUserDetail"""
+    id = db.Column(db.Integer, primary_key = True)
+    recover_amount = db.Column(db.Float, nullable=True)
+    note = db.Column(db.String(500), nullable=False)
+    borrower_detail = db.Column(db.Integer, db.ForeignKey('borrower_detail.id'),
+        nullable=False)

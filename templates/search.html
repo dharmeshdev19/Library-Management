@@ -20,6 +20,10 @@
 		tr:nth-child(even) {
 		  background-color: #dddddd;
 		}
+
+		input[type=text], input[type=number], select {
+    		height: 30px;
+    	}
 	</style>
 {% endblock %}
 {% block content %}
@@ -32,7 +36,7 @@
 		    </ul>
 	  	{% endif %}
 	{% endwith %}
-	<h1>LIBRARY BOOKS</h1>
+	<h3>LIBRARY BOOKS</h3>
 	<form method="POST" action="/search/">
 		<div class="form-group">
 			<label for="search">Search</label>
@@ -51,42 +55,76 @@
 					<option value="{{each.id}}">{{each.name}}</option>
 				{% endfor %}
 			</select>
-			<div class="data" id="date">
-				<label for="issued_date">Issued Date:</label>
-  				<input type="date" id="issued_date" name="issued_date">
-
-  				<label for="return_date">Return Date:</label>
-  				<input type="date" id="return_date" name="return_date">
-			</div>
-			<button type="submit" class="btn btn-primary">GO</button>
+			<button type="submit" class="btn btn-primary" style="height: 30px;">GO</button>
 		</div>
 		
 	</form>
 	{% if data.book_entry_obj %}
-		<table>
-			<tr>
-				<th>Book Code</th>
-				<th>Name</th>
-				<th>Author</th>
-				<th>Publisher</th>
-				<th>Price</th>
-				<th>Category</th>
-				<th>Book Shelf</th>
-				<th>Book Status</th>
-			</tr>
-			{% for book in data.book_entry_obj.items %}
+		{% if data.book_entry_obj.items %}
+			<a href="/download_book_list/"><button class="btn btn-success btn-lg float-right">Download in excle</button></a>
+			<table>
 				<tr>
-					<th>{{book.book_code}}</th>
-					<th>{{book.name}}</th>
-					<th>{{book.author}}</th>
-					<th>{{book.publisher}}</th>
-					<th>{{book.price}}</th>
-					<th>{{book.category}}</th>
-					<th>{{book.book_shelf}}</th>
-					<th>{{book.book_status}}</th>
+					<th>Book Code</th>
+					<th>Name</th>
+					<th>Book Language</th>
+					<th>Author</th>
+					<th>Publisher</th>
+					<th>Price</th>
+					<th>Category</th>
+					<th>Book Shelf</th>
+					<th>Book Status</th>
+					<th>Edit</th>
+					<th>Action</th>
 				</tr>
-			{% endfor %}
-		</table>
+				{% for book in data.book_entry_obj.items %}
+					<tr>
+						<th>{{book.book_code}}</th>
+						<th>{{book.name}}</th>
+						<th>{{book.book_language}}</th>
+						<th>{{book.author}}</th>
+						<th>{{book.publisher}}</th>
+						<th>{{book.price}}</th>
+						<th>{{book.category_name.name}}</th>
+						<th>{{book.shelf_name.name}}</th>
+						<th>{{book.book_status_name.name}}</th>
+						{% if book.book_status_name.name == 'In Library' %}
+							<th>
+								<a href="{{ url_for('book_edit',book_code=book.book_code)}}">
+									<button type="submit" class="btn btn-primary">
+									Edit</button>
+								</a>
+							</th>
+							<th>
+								<a href="{{ url_for('book_issue',book_code=book.book_code)}}"><button class="btn btn-primary">Issue</button></a>
+							</th>
+						{% elif book.book_status_name.name == 'Issued' %}
+							<th>
+								<a href="{{ url_for('book_edit',book_code=book.book_code)}}">
+									<button type="submit" class="btn btn-primary">
+									Edit</button>
+								</a>
+							</th>
+							<th>
+								<a href="{{ url_for('book_return',book_code=book.book_code)}}">
+									<button type="submit" class="btn btn-primary">
+									Return</button>
+								</a>
+							</th>
+						{% else %}
+							<th>
+								<button>Edit</button>
+							</th>
+							<th>
+								<button>Issue</button>
+							</th>
+						{% endif %}
+					</tr>
+				{% endfor %}
+				
+			</table>
+		{% else %}
+			<H3>Books not found!</H3>
+		{% endif %}
 		{% for page_num in data.book_entry_obj.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
 			{% if page_num %}
 				{% if data.book_entry_obj.page == page_num %}
@@ -101,86 +139,5 @@
 	{% endif %}
 
 	{% block script %}
-	    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-	    <script type="text/javascript">
-		    $( document ).ready(function() {
-		    	$("#date").hide();
-		    });
-
-		 	$("#book_status").click(function(){
-		 		book_status = document.getElementById("book_status").value;
-		 		if (book_status == 2) {
-		 			$("#date").show();
-		 		}else{
-		 			$("#date").hide();
-		 		}
-			});
-			// $("#update_detail").click(function(){
-			// 	username = document.getElementById("edit_username").value;
-		 //    	first_name = document.getElementById("edit_first_name").value;
-		 //    	last_name = document.getElementById("edit_last_name").value;
-		 //    	email = document.getElementById("edit_email").value;
-		 //    	birth_date = document.getElementById("edit_birth_day").value;
-		 //    	department = document.getElementById("edit_department").value;
-			// 	console.log(username, first_name, last_name, email, birth_date, department)
-			// 	var data = {
-			// 		'username': username,
-			// 		'first_name': first_name,
-			// 		'last_name': last_name,
-			// 		'email': email,
-			// 		'birth_date': birth_date,
-			// 		'department': department
-			// 	}
-			// 	$("#employee_detail_edit").hide();
-			// 	$("#employee_detail").show();
-
-		 //    	$.ajax({
-		 //            type: "POST",
-		 //            url: "/update_employee_detail/",
-		 //            contentType: 'application/json;charset=UTF-8',
-		 //            data: JSON.stringify(data),       
-		 //            success: function(resp){
-		 //            	if(JSON.parse(resp)['status']){ // true  not error 
-		 //            		console.log("Start");
-		 //            		if (JSON.parse(resp)['username'][0]){
-		 //            			$("#username").text(JSON.parse(resp)['username'][0]);
-		 //            			$("#username").attr("value", JSON.parse(resp)['username'][0]);
-		 //            		}
-			// 				if (JSON.parse(resp)['first_name'][0]) {
-			// 					$("#first_name").text(JSON.parse(resp)['first_name'][0]);
-		 //            			$("#first_name").attr("value", JSON.parse(resp)['first_name'][0]);
-			// 				}
-			// 				if (JSON.parse(resp)['last_name'][0]) {
-			// 					$("#last_name").text(JSON.parse(resp)['last_name'][0]);
-		 //            			$("#last_name").attr("value", JSON.parse(resp)['last_name'][0]);
-			// 				}
-			// 		    	if (JSON.parse(resp)['email'][0]) {
-			// 		    		$("#email").text(JSON.parse(resp)['email'][0]);
-		 //            			$("#email").attr("value", JSON.parse(resp)['email'][0]);
-			// 		    	}
-			// 		    	// try {
-			// 		    	if (JSON.parse(resp)['birth_date'][0]) {
-			// 		    		$("#birth_date").text(JSON.parse(resp)['birth_date'][0]);
-	  //           				$("#birth_date").attr("value", JSON.parse(resp)['birth_date'][0]);
-			// 		    	}
-			// 			    // } catch(e) {
-			// 			    // 	console.log("Date not store!")
-			// 			    // }
-			// 		    	if (JSON.parse(resp)['department'][0]) {
-			// 		    		$("#department").text(JSON.parse(resp)['department'][0]);
-		 //            			$("#department").attr("value", JSON.parse(resp)['department'][0]);
-			// 		    	}
-			// 		    	console.log("Done");
-			// 			}
-			// 			else 
-			// 			{
-			// 				console.log("error");
-			// 				alert(JSON.parse(resp)['error'])
-			// 			}
-		 //            }
-		 //        });
-
-			// });
-	    </script>
 	{% endblock script %}
 {% endblock content %}
